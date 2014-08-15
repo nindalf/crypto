@@ -1,8 +1,7 @@
-package main
+package matasano
 
 import (
 	"encoding/base64"
-	"fmt"
 )
 
 func hex2base64(hex string) string {
@@ -11,6 +10,6 @@ func hex2base64(hex string) string {
 	return enc
 }
 
-func main() {
-	fmt.Println(hex2base64("Man is distinguished, not only by his reason, but by this singular passion from"))
-}
+// func main() {
+// 	fmt.Println(hex2base64("Man is distinguished, not only by his reason, but by this singular passion from"))
+// }
