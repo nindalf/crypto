@@ -3,7 +3,7 @@ package matasano
 var candidates = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
 var freqletters = []byte("ETAOINSHRDLU etaoinshrdlu")
 
-func DecryptXor(input []byte) []byte {
+func DecryptXor(input []byte) ([]byte, int) {
 	var result []byte
 	var currank int
 	for _, l := range candidates {
@@ -14,7 +14,7 @@ func DecryptXor(input []byte) []byte {
 			result = decrypted
 		}
 	}
-	return result
+	return result, currank
 }
 
 func getrank(input []byte) int {
