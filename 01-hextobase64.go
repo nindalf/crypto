@@ -5,12 +5,14 @@ import "bytes"
 var base64vals = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/="
 var hexvals = []byte("0123456789abcdef")
 
+// Hex2base64 converts a hex string to a base64 encoded string
+// This solves http://cryptopals.com/sets/1/challenges/1/
 func Hex2base64(hex []byte) []byte {
-	hex = Hex2str(hex)
-	return Str2base64(hex)
+	hex = hex2str(hex)
+	return str2base64(hex)
 }
 
-func Hex2str(hex []byte) []byte {
+func hex2str(hex []byte) []byte {
 	convert := func(hex []byte) byte {
 		var sum int
 		sum += bytes.Index(hexvals, hex[0:1]) * 16
@@ -25,7 +27,7 @@ func Hex2str(hex []byte) []byte {
 	return b.Bytes()
 }
 
-func Str2hex(str []byte) []byte {
+func str2hex(str []byte) []byte {
 	convert := func(b byte) []byte {
 		out := make([]byte, 2)
 		out[1] = hexvals[b/16]
@@ -41,7 +43,7 @@ func Str2hex(str []byte) []byte {
 	return b.Bytes()
 }
 
-func Str2base64(b []byte) []byte {
+func str2base64(b []byte) []byte {
 	dst := make([]byte, maxEncodeLength(b))
 	EncodeBase64(dst, b)
 	return dst
@@ -55,6 +57,8 @@ func maxEncodeLength(b []byte) int {
 	return ((n / 3) + 1) * 4
 }
 
+// EncodeBase64 encodes a string to base64
+// This is my implementation, which is not that bad compared to the std lib implementation below
 func EncodeBase64(dst, src []byte) {
 	var i, j int
 	for i+2 < len(src) {
@@ -94,7 +98,7 @@ func pad(b []byte, n int) []byte {
 }
 
 // From the go std lib - http://golang.org/src/encoding/base64/base64.go
-// I made a minor modification - removing encoder and using my string from above (base64vals)
+// I made a minor modification - removing encoder and using base64vals instead
 
 // Encode encodes src using the encoding enc, writing
 // EncodedLen(len(src)) bytes to dst.

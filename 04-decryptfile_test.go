@@ -4,8 +4,9 @@ import "testing"
 
 func TestFindLine(t *testing.T) {
 	expected := "Now that the party is jumping\n"
-	result, line := FindLine("04-data.txt")
-	if expected != string(result) {
+	decrypted, line, key := FindLine("04-data.txt")
+	if expected != string(decrypted) {
+		t.Logf("Expected - %s\nFound - %s from %s, Key - %s", expected, string(decrypted), string(line), string(key))
 		t.FailNow()
 	}
 }

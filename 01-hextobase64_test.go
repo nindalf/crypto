@@ -14,7 +14,7 @@ func TestStr2base64(t *testing.T) {
 		"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3Vy"}
 
 	for i := range inputs {
-		if output[i] != string(Str2base64([]byte(inputs[i]))) {
+		if output[i] != string(str2base64([]byte(inputs[i]))) {
 			fmt.Printf("Test case %d failed", i)
 			t.FailNow()
 		}
@@ -24,7 +24,7 @@ func TestStr2base64(t *testing.T) {
 func TestHex2str(t *testing.T) {
 	h1 := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 	e1 := "I'm killing your brain like a poisonous mushroom"
-	if e1 != string(Hex2str([]byte(h1))) {
+	if e1 != string(hex2str([]byte(h1))) {
 		t.FailNow()
 	}
 }
