@@ -11,6 +11,12 @@ func Hex2base64(hex []byte) []byte {
 }
 
 func Hex2str(hex []byte) []byte {
+	convert := func(hex []byte) byte {
+		var sum int
+		sum += bytes.Index(hexvals, hex[0:1]) * 16
+		sum += bytes.Index(hexvals, hex[1:2]) * 1
+		return byte(sum)
+	}
 	var b bytes.Buffer
 	for i := 0; i < len(hex); {
 		b.WriteByte(convert(hex[i : i+2]))
@@ -19,11 +25,20 @@ func Hex2str(hex []byte) []byte {
 	return b.Bytes()
 }
 
-func convert(hex []byte) byte {
-	var sum int
-	sum += bytes.Index(hexvals, hex[0:1]) * 16
-	sum += bytes.Index(hexvals, hex[1:2]) * 1
-	return byte(sum)
+func Str2hex(str []byte) []byte {
+	convert := func(b byte) []byte {
+		out := make([]byte, 2)
+		out[1] = hexvals[b/16]
+		out[0] = hexvals[b%16]
+		return out
+	}
+	var b bytes.Buffer
+	for i := 0; i < len(str); i++ {
+		hex := convert(str[i])
+		b.WriteByte(hex[1])
+		b.WriteByte(hex[0])
+	}
+	return b.Bytes()
 }
 
 func Str2base64(b []byte) []byte {
