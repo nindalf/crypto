@@ -8,6 +8,6 @@ func TestXor(t *testing.T) {
 	expected := "746865206b696420646f6e277420706c6179"
 	actual := string(Xor(in1, in2))
 	if expected != actual {
-		t.Fatalf("Input - %s\t%s\nExptected - %s\nActual - %s", in1, in2, expected, actual)
+		t.Fatalf("Input - %s\t%s\nExptected - %s\nActual - %s", string(in1), string(in2), expected, actual)
 	}
 }
