@@ -7,7 +7,7 @@ func TestDecryptXor(t *testing.T) {
 	expected := "Cooking MC's like a pound of bacon"
 	decrypted, rank, key := DecryptXor(hex2str(input))
 	if expected != string(decrypted) {
-		t.Logf("Expected - %s\nFound - %sRank - %d, Key - %s", expected, string(decrypted), rank, string(key))
+		t.Logf("Expected - %s\nFound - %sRank - %f, Key - %s", expected, string(decrypted), rank, string(key))
 		t.Fail()
 	}
 }

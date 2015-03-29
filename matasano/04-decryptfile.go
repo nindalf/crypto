@@ -16,7 +16,7 @@ func FindLine(filepath string) ([]byte, []byte, byte) {
 		return result, line, rkey
 	}
 	lines := bytes.Split(b, []byte("\n"))
-	var currank int
+	var currank float64
 	for _, l := range lines {
 		decrypted, rank, key := DecryptXor(hex2str(l))
 		if currank < rank {
