@@ -17,7 +17,6 @@ func Xor(in1, in2 []byte) []byte {
 // Xor takes a buffer and XORs it with a single byte
 // This function is used in subsequent challenges
 func XorOne(in []byte, key byte) []byte {
-	in = hex2str(in)
 	out := make([]byte, len(in))
 
 	for i := 0; i < len(in); i++ {

@@ -26,6 +26,9 @@ func DecryptXor(input []byte) ([]byte, int, byte) {
 func getrank(input []byte) int {
 	var rank int
 	for i := range input {
+		// if (i >= 65 && i <= 90) || (i >= 97 && i <= 122) {
+		// 	rank++
+		// }
 		for j := range freqletters {
 			if input[i] == freqletters[j] {
 				rank++
