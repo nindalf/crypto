@@ -1,6 +1,10 @@
 package matasano
 
-var candidates = []byte("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789")
+const (
+	minASCII = 32
+	maxASCII = 126
+)
+
 var freqletters = []byte("ETAOINSHRDLU etaoinshrdlu")
 
 // based on http://en.wikipedia.org/wiki/Letter_frequency
@@ -35,7 +39,8 @@ func DecryptXor(input []byte) ([]byte, float64, byte) {
 	var result []byte
 	var currank float64
 	var rkey byte
-	for _, key := range candidates {
+	for i := minASCII; i <= maxASCII; i++ {
+		key := byte(i)
 		decrypted := XorOne(input, key)
 		rank := getrank(decrypted)
 		if currank < rank {
@@ -50,13 +55,13 @@ func DecryptXor(input []byte) ([]byte, float64, byte) {
 func getrank(input []byte) float64 {
 	var rank float64
 	for _, l := range input {
-		rank += letterfreq[l]
+		// rank += letterfreq[l]
 
-		// for j := range freqletters {
-		// 	if l == freqletters[j] {
-		// 		rank++
-		// 	}
-		// }
+		for j := range freqletters {
+			if l == freqletters[j] {
+				rank++
+			}
+		}
 	}
 	return rank
 }

@@ -3,7 +3,6 @@ package matasano
 import (
 	"bytes"
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -12,12 +11,14 @@ const (
 	maxKeySize = 40
 )
 
-// DecryptFile has not been completed yet
+// DecryptFile decrypts a file encrypted with repeating-key XOR and encoded with base64
 // This solves http://cryptopals.com/sets/1/challenges/6/
-func DecryptFile(filepath string) string {
+func DecryptFile(filepath string) (string, string) {
 	encoded, _ := ioutil.ReadFile(filepath)
 	b := make([]byte, (len(encoded)/4)*3)
 	base64.StdEncoding.Decode(b, encoded)
+	b = bytes.Trim(b, "\x00")
+
 	ksize := keysize(b)
 	buffers := make([]bytes.Buffer, ksize)
 	for i := 0; i < len(b)-ksize; {
@@ -31,8 +32,8 @@ func DecryptFile(filepath string) string {
 		_, _, keybyte := DecryptXor(buffers[i].Bytes())
 		key.WriteByte(keybyte)
 	}
-	fmt.Println("key - ", key.String())
-	return string(DecryptRepeatedXor(b, key.Bytes()))
+
+	return key.String(), string(DecryptRepeatedXor(b, key.Bytes()))
 }
 
 func keysize(p []byte) int {

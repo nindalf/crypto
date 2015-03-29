@@ -2,7 +2,6 @@ package matasano
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -12,8 +11,11 @@ const (
 )
 
 func TestDecryptFile(t *testing.T) {
-	fmt.Println(DecryptFile(datafile))
-	t.Fail() // This has not been completed yet
+	actkey, plaintext := DecryptFile(datafile)
+	expkey := "Terminator X: Bring the noise"
+	if expkey != actkey {
+		t.Fatalf("Inputs - %s\nExptected key - %s\nActual key - %s\nPlaintext -\n%s", datafile, expkey, actkey, plaintext)
+	}
 }
 
 func TestKeySize(t *testing.T) {
