@@ -2,6 +2,7 @@ package matasano
 
 import (
 	"encoding/base64"
+	"fmt"
 	"io/ioutil"
 	"testing"
 )
@@ -11,7 +12,7 @@ const (
 )
 
 func TestDecryptFile(t *testing.T) {
-	DecryptFile(datafile)
+	fmt.Println(DecryptFile(datafile))
 	t.Fail() // This has not been completed yet
 }
 
@@ -22,7 +23,7 @@ func TestKeySize(t *testing.T) {
 	}
 	b := make([]byte, (len(encoded)/4)*3)
 	base64.StdEncoding.Decode(b, encoded)
-	expected := 28
+	expected := 29
 	actual := keysize(b)
 	if expected != actual {
 		t.Fatalf("Inputs - %s\nExptected - %d\nActual - %d", datafile, expected, actual)

@@ -13,11 +13,11 @@ const (
 )
 
 // DecryptFile has not been completed yet
+// This solves http://cryptopals.com/sets/1/challenges/6/
 func DecryptFile(filepath string) string {
 	encoded, _ := ioutil.ReadFile(filepath)
 	b := make([]byte, (len(encoded)/4)*3)
 	base64.StdEncoding.Decode(b, encoded)
-
 	ksize := keysize(b)
 	buffers := make([]bytes.Buffer, ksize)
 	for i := 0; i < len(b)-ksize; {
@@ -38,10 +38,10 @@ func DecryptFile(filepath string) string {
 func keysize(p []byte) int {
 	var curdistance, curkeysize int
 	curdistance = (1 << 32) - 1
-	for i := minKeySize; i < maxKeySize; i++ {
+	for i := minKeySize; i <= maxKeySize; i++ {
 		distance := 0
 		for j := 0; j < len(p)-i*2; {
-			distance += hammingdistance(p[j:j+i], p[j+i+1:j+2*i+1])
+			distance += hammingdistance(p[j:j+i], p[j+i:j+2*i])
 			j += i
 		}
 		if curdistance > distance {
