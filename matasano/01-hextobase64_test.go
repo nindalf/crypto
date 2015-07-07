@@ -1,19 +1,34 @@
 package matasano
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestStr2base64(t *testing.T) {
-	inputs := []string{"Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure.",
-		"Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasure",
-		"Man is distinguished, not only by his reason, but by this singular passion from other animals, which is a lust of the mind, that by a perseverance of delight in the continued and indefatigable generation of knowledge, exceeds the short vehemence of any carnal pleasur"}
-	outputs := []string{"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=",
-		"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZQ==",
-		"TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3Vy"}
-
+	inputs := []string{"pleasure.", "leasure.", "easure.", "asure.", "sure."}
+	expected := []string{"cGxlYXN1cmUu", "bGVhc3VyZS4=", "ZWFzdXJlLg==", "YXN1cmUu", "c3VyZS4="}
 	for i := range inputs {
 		encoded := string(str2base64([]byte(inputs[i])))
-		if outputs[i] != encoded {
-			t.Fatalf("Input - %s\nExptected - %s\nActual - %s", inputs[i], outputs[i], encoded)
+		if expected[i] != encoded {
+			t.Fatalf("Input - %s\nExptected - %s\nActual - %s", inputs[i], expected[i], encoded)
+		}
+	}
+}
+
+func TestDecodeBase64(t *testing.T) {
+	inputs := [][]byte{[]byte("cGxlYXN1cmUu"), []byte("bGVhc3VyZS4="),
+		[]byte("ZWFzdXJlLg=="), []byte("YXN1cmUu"), []byte("c3VyZS4=")}
+	expected := [][]byte{[]byte("pleasure."), []byte("leasure."), []byte("easure."),
+		[]byte("asure."), []byte("sure.")}
+	for i, src := range inputs {
+		dst := make([]byte, (len(src)/4)*3)
+		n := DecodeBase64(dst, src)
+		dst = dst[0:n]
+		if string(dst) != string(expected[i]) {
+			fmt.Println(len(dst), len(expected[i]))
+			fmt.Println(dst, expected[i])
+			t.Fatalf("Input - %s\nExpected - %s\nFound - %s", string(src), string(expected[i]), string(dst))
 		}
 	}
 }
