@@ -110,9 +110,19 @@ func pad(b []byte, n int) []byte {
 	return b
 }
 
+// copied from http://golang.org/src/encoding/base64/base64.go#L54
+var removeNewlinesMapper = func(r rune) rune {
+	if r == '\r' || r == '\n' {
+		return -1
+	}
+	return r
+}
+
 // DecodeBase64 decodes a base64 encoded string
-// Skips all the error checking done in the stdlib implementation
+// Skips all the error checking done in the stdlib implementation.
+// It will panic on mangled input
 func DecodeBase64(dst, src []byte) int {
+	src = bytes.Map(removeNewlinesMapper, src)
 	var written int
 	for len(src) > 0 {
 		var b0, b1, b2 byte
@@ -146,7 +156,7 @@ func DecodeBase64(dst, src []byte) int {
 	return written
 }
 
-// From the go std lib - http://golang.org/src/encoding/base64/base64.go
+// From the go std lib - http://golang.org/src/encoding/base64/base64.go#L71
 // I made a minor modification - removing encoder and using base64vals instead
 
 // Encode encodes src using the encoding enc, writing
