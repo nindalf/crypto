@@ -1,7 +1,6 @@
 package matasano
 
 import (
-	"encoding/base64"
 	"io/ioutil"
 	"testing"
 )
@@ -24,7 +23,7 @@ func TestKeySize(t *testing.T) {
 		t.Fatal(err)
 	}
 	b := make([]byte, (len(encoded)/4)*3)
-	base64.StdEncoding.Decode(b, encoded)
+	DecodeBase64(b, encoded)
 	expected := 29
 	actual := keysize(b)
 	if expected != actual {

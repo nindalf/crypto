@@ -2,7 +2,6 @@ package matasano
 
 import (
 	"bytes"
-	"encoding/base64"
 	"io/ioutil"
 )
 
@@ -16,8 +15,7 @@ const (
 func DecryptFile(filepath string) (string, string) {
 	encoded, _ := ioutil.ReadFile(filepath)
 	b := make([]byte, (len(encoded)/4)*3)
-	base64.StdEncoding.Decode(b, encoded)
-	b = bytes.Trim(b, "\x00")
+	DecodeBase64(b, encoded)
 
 	ksize := keysize(b)
 	buffers := make([]bytes.Buffer, ksize)
