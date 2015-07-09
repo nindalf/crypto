@@ -1,9 +1,6 @@
 package matasano
 
-import (
-	"fmt"
-	"testing"
-)
+import "testing"
 
 func TestEncodeBase64(t *testing.T) {
 	inputs := []string{"pleasure.", "leasure.", "easure.", "asure.", "sure."}
@@ -17,18 +14,15 @@ func TestEncodeBase64(t *testing.T) {
 }
 
 func TestDecodeBase64(t *testing.T) {
-	inputs := [][]byte{[]byte("cGxlYXN1cmUu"), []byte("bGVhc3VyZS4="),
-		[]byte("ZWFzdXJlLg=="), []byte("YXN1cmUu"), []byte("c3VyZS4=")}
-	expected := [][]byte{[]byte("pleasure."), []byte("leasure."), []byte("easure."),
-		[]byte("asure."), []byte("sure.")}
+	inputs := [][]byte{[]byte("cGxl\r\rYXN1cmUu"), []byte("bGVhc3\r\nVyZS4="),
+		[]byte("Z\rWFzdXJlL\ng=="), []byte("YX\nN1c\nmUu"), []byte("c3\n\rVyZS4=")}
+	expected := []string{"pleasure.", "leasure.", "easure.", "asure.", "sure."}
 	for i, src := range inputs {
 		dst := make([]byte, (len(src)/4)*3)
 		n := DecodeBase64(dst, src)
 		dst = dst[0:n]
-		if string(dst) != string(expected[i]) {
-			fmt.Println(len(dst), len(expected[i]))
-			fmt.Println(dst, expected[i])
-			t.Fatalf("Input - %s\nExpected - %s\nFound - %s", string(src), string(expected[i]), string(dst))
+		if string(dst) != expected[i] {
+			t.Fatalf("Input - %s\nExpected - %s\nFound - %s", string(src), expected[i], string(dst))
 		}
 	}
 }
