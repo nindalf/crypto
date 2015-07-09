@@ -6,7 +6,7 @@ import (
 )
 
 // DetectAESECB detects which line is likely to be encoded by AES in ECB mode
-// This solves http://cryptopals.com/sets/1/challenges/3/
+// This solves http://cryptopals.com/sets/1/challenges/8/
 func DetectAESECB(filepath string) (string, error) {
 	lines, err := ioutil.ReadFile(filepath)
 	if err != nil {

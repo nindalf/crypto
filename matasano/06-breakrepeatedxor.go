@@ -31,7 +31,7 @@ func DecryptFile(filepath string) (string, string) {
 		key.WriteByte(keybyte)
 	}
 
-	return key.String(), string(DecryptRepeatedXor(b, key.Bytes()))
+	return key.String(), string(decryptRepeatedXor(b, key.Bytes()))
 }
 
 func keysize(p []byte) int {

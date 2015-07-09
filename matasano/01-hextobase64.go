@@ -18,14 +18,13 @@ var base64dec = map[byte]byte{'a': 26, 'A': 0,
 
 var hexvals = []byte("0123456789abcdef")
 
-// Hex2base64 converts a hex string to a base64 encoded string
+// Base64FromHex converts a hex string to a base64 encoded string
 // This solves http://cryptopals.com/sets/1/challenges/1/
-func Hex2base64(hex []byte) []byte {
-	hex = hex2str(hex)
-	return str2base64(hex)
+func Base64FromHex(hex []byte) []byte {
+	return base64FromString(stringFromHex(hex))
 }
 
-func hex2str(hex []byte) []byte {
+func stringFromHex(hex []byte) []byte {
 	convert := func(hex []byte) byte {
 		var sum int
 		sum += bytes.Index(hexvals, hex[0:1]) * 16
@@ -40,7 +39,7 @@ func hex2str(hex []byte) []byte {
 	return b.Bytes()
 }
 
-func str2hex(str []byte) []byte {
+func hexFromString(str []byte) []byte {
 	convert := func(b byte) []byte {
 		out := make([]byte, 2)
 		out[1] = hexvals[b/16]
@@ -56,7 +55,7 @@ func str2hex(str []byte) []byte {
 	return b.Bytes()
 }
 
-func str2base64(b []byte) []byte {
+func base64FromString(b []byte) []byte {
 	dst := make([]byte, maxEncodeLength(b))
 	EncodeBase64(dst, b)
 	return dst
