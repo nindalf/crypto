@@ -13,72 +13,75 @@ func DecryptAES(filepath string, key []byte) string {
 	return ""
 }
 
-// Nk - number of words. Values are 4, 6, 8 for 128, 192 and 256-bit
-// Nb - number of words in an AES block. Constant 4.
-// Nr - number of rounds. Values are 10, 12, 14 for 128, 192 and 256-bit
+// based on https://en.wikipedia.org/wiki/Rijndael_key_schedule
+// I've tried to optimise for readability.
 
-func keyExpansion(key []byte) [][]byte {
+// nwords - number of words. Values are 4, 6, 8 for 128, 192 and 256-bit
+// Nb - number of words in an AES block. Constant 4. Implicitly assumed since I use uint32 in the implementation
+// rounds - number of rounds. Values are 10, 12, 14 for 128, 192 and 256-bit
+
+func keyExpansion(key []byte) []uint32 {
 	keysize := len(key)
-	rounds := (keysize / 4) + 6
+	nwords := (keysize / 4)
+	rounds := nwords + 6 // don't know if this is a coincidence
 
-	expkeys := make([][]byte, rounds+1)
-	expkeys[0] = key
+	expkeys := make([]uint32, nwords*(rounds+1))
+	// the key occupies the first nwords slots of the expanded key
+	var i int
+	for ; i < nwords; i++ {
+		expkeys[i] = uint32(key[i*4])<<24 | uint32(key[i*4+1])<<16 | uint32(key[i*4+2])<<8 | uint32(key[i*4+3])
+	}
 
-	for i := 1; i < rounds+1; i++ {
-		t := make([]byte, 4, 5)
-		prevkey := expkeys[i-1]
-		copy(t, prevkey[len(prevkey)-5:len(prevkey)])
-		t = rotWord(t)
-		t = subWord(t)
-		t[0] = t[0] ^ rcon(i)
-		xorword(t, prevkey[0:4])
+	for i < nwords*(rounds+1) {
+		// equivalent to
+		// expkeys[i] = (subWord(rotWord(expkeys[i-1])) ^ rcon(1/nwords)) ^ expkeys[i-nwords]
+		expkeys[i] = expkeys[i-1]
+		expkeys[i] = rotWord(expkeys[i])
+		expkeys[i] = subWord(expkeys[i])
+		expkeys[i] = expkeys[i] ^ rcon(i/nwords-1)
+		expkeys[i] = expkeys[i] ^ expkeys[i-nwords]
 
-		expkeys[i] = append(expkeys[i], t[0], t[1], t[2], t[3])
-
-		state := t
-		for j := 1; j < 4; j++ {
-			x := make([]byte, 4)
-			copy(x, state)
-			xorword(x, prevkey[j*4:j*4+4])
-			expkeys[i] = append(expkeys[i], x[0], x[1], x[2], x[3])
-			state = x
+		for j := 1; j <= 3; j++ {
+			expkeys[i+j] = expkeys[i+j-1] ^ expkeys[i+j-nwords]
 		}
-		// steps for 192 and 256 bit keys skipped. I'll add them once I know it works for 128-bit
+
+		if nwords == 6 {
+			for j := 4; j < 6; j++ {
+				expkeys[i+j] = expkeys[i+j-1] ^ expkeys[i+j-nwords]
+			}
+		}
+
+		if nwords == 8 {
+			expkeys[i+4] = subWord(expkeys[i+3]) ^ expkeys[i+4-nwords]
+			for j := 5; j < 8; j++ {
+				expkeys[i+j] = expkeys[i+j-1] ^ expkeys[i+j-nwords]
+			}
+		}
+
+		i += nwords
 	}
 
 	return expkeys
 }
 
-func xorword(a, b []byte) {
-	for i := range a {
-		a[i] = a[i] ^ b[i]
-	}
+func rcon(i int) uint32 {
+	return uint32(powx[i]) << 24
 }
 
-func rcon(i int) byte {
-	var b byte
-	if i >= 0 && i < 16 {
-		b = powx[i]
-	}
-	return b
+func rotWord(input uint32) uint32 {
+	return input>>24 | input<<8
 }
 
-func rotWord(input []byte) []byte {
-	return append(input[1:len(input)], input[0])
+func subWord(input uint32) uint32 {
+	return uint32(sbox0[input>>24&0xff])<<24 |
+		uint32(sbox0[input>>16&0xff])<<16 |
+		uint32(sbox0[input>>8&0xff])<<8 | uint32(sbox0[input&0xff])
 }
 
-func subWord(input []byte) []byte {
-	for i := range input {
-		input[i] = sbox0[input[i]]
-	}
-	return input
-}
-
-func invSubWord(input []byte) []byte {
-	for i := range input {
-		input[i] = sbox1[input[i]]
-	}
-	return input
+func invSubWord(input uint32) uint32 {
+	return uint32(sbox1[input>>24&0xff])<<24 |
+		uint32(sbox1[input>>16&0xff])<<16 |
+		uint32(sbox1[input>>8&0xff])<<8 | uint32(sbox1[input&0xff])
 }
 
 // AES is based on the mathematical behavior of binary polynomials
