@@ -35,22 +35,50 @@ func invMixColumns(state []uint32) {
 	var i uint
 	for ; i < 4; i++ {
 		var a0, a1, a2, a3 byte
-		a0 = byte((state[0] >> (3 - i) * 8) & 0xff)
-		a1 = byte((state[1] >> (3 - i) * 8) & 0xff)
-		a2 = byte((state[2] >> (3 - i) * 8) & 0xff)
-		a3 = byte((state[3] >> (3 - i) * 8) & 0xff)
+		a0 = byte((state[0] >> ((3 - i) * 8)) & 0xff)
+		a1 = byte((state[1] >> ((3 - i) * 8)) & 0xff)
+		a2 = byte((state[2] >> ((3 - i) * 8)) & 0xff)
+		a3 = byte((state[3] >> ((3 - i) * 8)) & 0xff)
+
 		var r0, r1, r2, r3 byte
 		r0 = gMulBy14[a0] ^ gMulBy11[a1] ^ gMulBy13[a2] ^ gMulBy9[a3]
 		r1 = gMulBy9[a0] ^ gMulBy14[a1] ^ gMulBy11[a2] ^ gMulBy13[a3]
 		r2 = gMulBy13[a0] ^ gMulBy9[a1] ^ gMulBy14[a2] ^ gMulBy11[a3]
 		r3 = gMulBy11[a0] ^ gMulBy13[a1] ^ gMulBy9[a2] ^ gMulBy14[a3]
+
 		var mask uint32
-		mask = 0xff << (3 - i) * 8
+		mask = 0xff << ((3 - i) * 8)
 		mask = ^mask // used to clear those bits
-		state[0] = (state[0] & mask) | (uint32(r0) << (3 - i) * 8)
-		state[1] = (state[1] & mask) | (uint32(r1) << (3 - i) * 8)
-		state[2] = (state[2] & mask) | (uint32(r2) << (3 - i) * 8)
-		state[3] = (state[3] & mask) | (uint32(r3) << (3 - i) * 8)
+		state[0] = (state[0] & mask) | (uint32(r0) << ((3 - i) * 8))
+		state[1] = (state[1] & mask) | (uint32(r1) << ((3 - i) * 8))
+		state[2] = (state[2] & mask) | (uint32(r2) << ((3 - i) * 8))
+		state[3] = (state[3] & mask) | (uint32(r3) << ((3 - i) * 8))
+	}
+}
+
+func mixColumns(state []uint32) {
+	var i uint
+	for ; i < 4; i++ {
+		var a0, a1, a2, a3 byte
+		a0 = byte((state[0] >> ((3 - i) * 8)) & 0xff)
+		a1 = byte((state[1] >> ((3 - i) * 8)) & 0xff)
+		a2 = byte((state[2] >> ((3 - i) * 8)) & 0xff)
+		a3 = byte((state[3] >> ((3 - i) * 8)) & 0xff)
+
+		var r0, r1, r2, r3 byte
+		r0 = gMulBy2[a0] ^ gMulBy3[a1] ^ a2 ^ a3
+		r1 = a0 ^ gMulBy2[a1] ^ gMulBy3[a2] ^ a3
+		r2 = a0 ^ a1 ^ gMulBy2[a2] ^ gMulBy3[a3]
+		r3 = gMulBy3[a0] ^ a1 ^ a2 ^ gMulBy2[a3]
+
+		var mask uint32
+		mask = 0xff << ((3 - i) * 8)
+		mask = ^mask // used to clear those bits
+		// fmt.Println(state[0])
+		state[0] = (state[0] & mask) | (uint32(r0) << ((3 - i) * 8))
+		state[1] = (state[1] & mask) | (uint32(r1) << ((3 - i) * 8))
+		state[2] = (state[2] & mask) | (uint32(r2) << ((3 - i) * 8))
+		state[3] = (state[3] & mask) | (uint32(r3) << ((3 - i) * 8))
 	}
 }
 
