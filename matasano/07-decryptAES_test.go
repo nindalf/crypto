@@ -18,7 +18,7 @@ func TestKeyExpansion(t *testing.T) {
 	actual := keyExpansion([]byte(key))
 	for i := range expandedkey {
 		if expandedkey[i] != actual[i] {
-			t.Fatalf("Expanded key is incorrect")
+			t.Fatalf("Expanded key for %s is incorrect\n", key)
 		}
 	}
 }
