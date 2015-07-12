@@ -19,9 +19,21 @@ func invShiftRows(state []uint32) {
 	rotWordLeft(state[3], 3)
 }
 
+func shiftRows(state []uint32) {
+	rotWordRight(state[1], 1)
+	rotWordRight(state[2], 2)
+	rotWordRight(state[3], 3)
+}
+
 func invSubBytes(state []uint32) {
 	for i := range state {
 		state[i] = invSubWord(state[i])
+	}
+}
+
+func subBytes(state []uint32) {
+	for i := range state {
+		state[i] = subWord(state[i])
 	}
 }
 
@@ -31,6 +43,7 @@ func addRoundKey(state, key []uint32) {
 	}
 }
 
+// based on https://en.wikipedia.org/wiki/Rijndael_mix_columns
 func invMixColumns(state []uint32) {
 	var i uint
 	for ; i < 4; i++ {
@@ -56,6 +69,7 @@ func invMixColumns(state []uint32) {
 	}
 }
 
+// based on https://en.wikipedia.org/wiki/Rijndael_mix_columns
 func mixColumns(state []uint32) {
 	var i uint
 	for ; i < 4; i++ {
