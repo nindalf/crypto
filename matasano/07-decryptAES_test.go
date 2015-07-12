@@ -2,9 +2,9 @@ package matasano
 
 import "testing"
 
-// func TestDecryptAES(t *testing.T) {
-// 	DecryptAES("07-data.txt")
-// }
+func TestDecryptAES(t *testing.T) {
+	DecryptAES("07-data.txt", []byte("YELLOW SUBMARINE"))
+}
 
 func TestKeyExpansion(t *testing.T) {
 	key := "YELLOW SUBMARINE"
@@ -24,10 +24,22 @@ func TestKeyExpansion(t *testing.T) {
 }
 
 // test vectors from https://en.wikipedia.org/wiki/Rijndael_mix_columns#Test_vectors_for_MixColumns.28.29.3B_not_for_InvMixColumns
-func TestMixColumn(t *testing.T) {
+func TestMixColumns(t *testing.T) {
 	input := []uint32{0xdbf201c6, 0x130a01c6, 0x532201c6, 0x455c01c6}
 	expected := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	mixColumns(input)
+	for i := 0; i < 4; i++ {
+		if input[i] != expected[i] {
+			t.Fatalf("Mix columns failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
+		}
+	}
+}
+
+// test vectors reversed from previous TestMixColumns
+func TestInvMixColumns(t *testing.T) {
+	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
+	expected := []uint32{0xdbf201c6, 0x130a01c6, 0x532201c6, 0x455c01c6}
+	invMixColumns(input)
 	for i := 0; i < 4; i++ {
 		if input[i] != expected[i] {
 			t.Fatalf("Mix columns failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
