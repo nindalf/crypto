@@ -46,3 +46,25 @@ func TestInvMixColumns(t *testing.T) {
 		}
 	}
 }
+
+func TestShiftRows(t *testing.T) {
+	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
+	expected := []uint32{0x8e9f01c6, 0xdc01c64d, 0x01c6a158, 0xc6bc9d01}
+	shiftRows(input)
+	for i := 0; i < 4; i++ {
+		if input[i] != expected[i] {
+			t.Fatalf("Shift rows failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
+		}
+	}
+}
+
+func TestInvShiftRows(t *testing.T) {
+	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
+	expected := []uint32{0x8e9f01c6, 0xc64ddc01, 0x01c6a158, 0x9d01c6bc}
+	invShiftRows(input)
+	for i := 0; i < 4; i++ {
+		if input[i] != expected[i] {
+			t.Fatalf("Shift rows failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
+		}
+	}
+}
