@@ -2,7 +2,6 @@ package matasano
 
 import (
 	"encoding/base64"
-	"fmt"
 	"io/ioutil"
 )
 
@@ -18,9 +17,8 @@ func DecryptAES(filepath string, key []byte) string {
 	}
 
 	expkey := keyExpansion(key)
-	nwords := len(key) / 4
 	for i := 0; i < len(state); {
-		decrypt(state[i:i+nwords], expkey)
+		decrypt(state[i:i+4], expkey)
 		i += 4
 	}
 
@@ -30,27 +28,41 @@ func DecryptAES(filepath string, key []byte) string {
 		b[i*4+2] = byte((state[i] >> 8) & 0xff)
 		b[i*4+3] = byte((state[i]) & 0xff)
 	}
-	fmt.Println(string(b[0:160]))
-
 	return string(b)
 }
 
 func decrypt(state, expkey []uint32) {
-	nwords := len(state)
-	keyi := len(expkey) - nwords
-	addRoundKey(state, expkey[keyi:keyi+nwords])
-	keyi -= nwords
+	keyi := len(expkey) - 4
+	addRoundKey(state, expkey[keyi:keyi+4])
+	keyi -= 4
 	rounds := len(expkey)/4 - 2
 	for i := 0; i < rounds; i++ {
 		invShiftRows(state)
 		invSubBytes(state)
-		addRoundKey(state, expkey[keyi:keyi+nwords])
+		addRoundKey(state, expkey[keyi:keyi+4])
 		keyi -= 4
 		invMixColumns(state)
 	}
 	invShiftRows(state)
 	invSubBytes(state)
-	addRoundKey(state, expkey[keyi:keyi+nwords])
+	addRoundKey(state, expkey[keyi:keyi+4])
+}
+
+func encrypt(state, expkey []uint32) {
+	keyi := 0
+	addRoundKey(state, expkey[keyi:keyi+4])
+	keyi += 4
+	rounds := len(expkey)/4 - 2
+	for i := 0; i < rounds; i++ {
+		subBytes(state)
+		shiftRows(state)
+		mixColumns(state)
+		addRoundKey(state, expkey[keyi:keyi+4])
+		keyi += 4
+	}
+	subBytes(state)
+	shiftRows(state)
+	addRoundKey(state, expkey[keyi:keyi+4])
 }
 
 func invShiftRows(state []uint32) {
@@ -114,7 +126,7 @@ func mixColumns(state []uint32) {
 func manipulateColumns(state []uint32, calc func(byte, byte, byte, byte) (byte, byte, byte, byte)) {
 	var i uint
 	for ; i < 4; i++ {
-		// Read column by column
+		// Read one column at a time
 		var a0, a1, a2, a3 byte
 		a0 = byte((state[0] >> ((3 - i) * 8)) & 0xff)
 		a1 = byte((state[1] >> ((3 - i) * 8)) & 0xff)
@@ -124,9 +136,11 @@ func manipulateColumns(state []uint32, calc func(byte, byte, byte, byte) (byte, 
 		// calculate the transformed bytes
 		r0, r1, r2, r3 := calc(a0, a1, a2, a3)
 
-		var mask uint32 // used to clear those bits
+		// used to clear the column of its existing value
+		var mask uint32
 		mask = 0xff << ((3 - i) * 8)
 		mask = ^mask
+
 		// set the column with the calculated values
 		state[0] = (state[0] & mask) | (uint32(r0) << ((3 - i) * 8))
 		state[1] = (state[1] & mask) | (uint32(r1) << ((3 - i) * 8))

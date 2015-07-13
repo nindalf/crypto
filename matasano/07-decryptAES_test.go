@@ -1,9 +1,52 @@
 package matasano
 
-import "testing"
+import (
+	"fmt"
+	"testing"
+)
 
 func TestDecryptAES(t *testing.T) {
-	DecryptAES("07-data.txt", []byte("YELLOW SUBMARINE"))
+	plaintext := DecryptAES("07-data.txt", []byte("YELLOW SUBMARINE"))
+	fmt.Println(plaintext[0:160])
+}
+
+func TestBoth(t *testing.T) {
+	plaintext := "ATTACK AT DAWN!!"
+	key := "YELLOW SUBMARINE"
+	expkey := keyExpansion([]byte(key))
+
+	b := []byte(plaintext)
+	state := make([]uint32, len(b)/4)
+	for i := range state {
+		state[i] = uint32(b[i*4])<<24 | uint32(b[i*4+1])<<16 | uint32(b[i*4+2])<<8 | uint32(b[i*4+3])
+	}
+
+	nwords := len(key) / 4
+	for i := 0; i < len(state); {
+		decrypt(state[i:i+nwords], expkey)
+		i += 4
+	}
+
+	for i := range state {
+		b[i*4] = byte((state[i] >> 24) & 0xff)
+		b[i*4+1] = byte((state[i] >> 16) & 0xff)
+		b[i*4+2] = byte((state[i] >> 8) & 0xff)
+		b[i*4+3] = byte((state[i]) & 0xff)
+	}
+	fmt.Println(string(b))
+
+	for i := 0; i < len(state); {
+		encrypt(state[i:i+nwords], expkey)
+		i += 4
+	}
+
+	for i := range state {
+		b[i*4] = byte((state[i] >> 24) & 0xff)
+		b[i*4+1] = byte((state[i] >> 16) & 0xff)
+		b[i*4+2] = byte((state[i] >> 8) & 0xff)
+		b[i*4+3] = byte((state[i]) & 0xff)
+	}
+	fmt.Println(string(b))
 }
 
 func TestKeyExpansion(t *testing.T) {
@@ -35,7 +78,7 @@ func TestMixColumns(t *testing.T) {
 	}
 }
 
-// test vectors reversed from previous TestMixColumns
+// test vectors reversed from TestMixColumns
 func TestInvMixColumns(t *testing.T) {
 	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	expected := []uint32{0xdbf201c6, 0x130a01c6, 0x532201c6, 0x455c01c6}
