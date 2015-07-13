@@ -2,7 +2,9 @@ package matasano
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
+	"time"
 )
 
 func TestDecryptAES(t *testing.T) {
@@ -49,6 +51,18 @@ func TestBoth(t *testing.T) {
 	fmt.Println(string(b))
 }
 
+func TestEncryptDecrypt(t *testing.T) {
+	key := "YELLOW SUBMARINE"
+	expkey := keyExpansion([]byte(key))
+	enc := func(state []uint32) {
+		encrypt(state, expkey)
+	}
+	dec := func(state []uint32) {
+		decrypt(state, expkey)
+	}
+	testForwardAndInverse(t, enc, dec, "Encrypt")
+}
+
 func TestKeyExpansion(t *testing.T) {
 	key := "YELLOW SUBMARINE"
 	expandedkey := []uint32{1497713740, 1331109971, 1430408513, 1380535877, 1667899980,
@@ -64,6 +78,10 @@ func TestKeyExpansion(t *testing.T) {
 			t.Fatalf("Expanded key for %s is incorrect\n", key)
 		}
 	}
+}
+
+func TestBothSubWords(t *testing.T) {
+	testForwardAndInverse(t, subBytes, invSubBytes, "Substitution")
 }
 
 // test vectors from https://en.wikipedia.org/wiki/Rijndael_mix_columns#Test_vectors_for_MixColumns.28.29.3B_not_for_InvMixColumns
@@ -90,6 +108,10 @@ func TestInvMixColumns(t *testing.T) {
 	}
 }
 
+func TestBothMixColumns(t *testing.T) {
+	testForwardAndInverse(t, mixColumns, invMixColumns, "Mix columns")
+}
+
 func TestShiftRows(t *testing.T) {
 	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	expected := []uint32{0x8e9f01c6, 0xdc01c64d, 0x01c6a158, 0xc6bc9d01}
@@ -108,6 +130,28 @@ func TestInvShiftRows(t *testing.T) {
 	for i := 0; i < 4; i++ {
 		if input[i] != expected[i] {
 			t.Fatalf("Shift rows failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
+		}
+	}
+}
+
+func TestBothShiftRows(t *testing.T) {
+	testForwardAndInverse(t, shiftRows, invShiftRows, "Shift rows")
+}
+
+func testForwardAndInverse(t *testing.T, forward, inverse func([]uint32), name string) {
+	rand.Seed(time.Now().UnixNano())
+	input, expected := make([]uint32, 4), make([]uint32, 4)
+	for i := 0; i < 10; i++ {
+		for j := range input {
+			n := rand.Uint32()
+			input[j], expected[j] = n, n
+		}
+		forward(input)
+		inverse(input)
+		for j := range input {
+			if input[j] != expected[j] {
+				t.Fatalf("%s forward and inverse failed. Expected - %d, Received %d", name, expected[j], input[j])
+			}
 		}
 	}
 }
