@@ -23,10 +23,8 @@ func TestBoth(t *testing.T) {
 		state[i] = uint32(b[i*4])<<24 | uint32(b[i*4+1])<<16 | uint32(b[i*4+2])<<8 | uint32(b[i*4+3])
 	}
 
-	nwords := len(key) / 4
-	for i := 0; i < len(state); {
-		decrypt(state[i:i+nwords], expkey)
-		i += 4
+	for i := 0; i < len(state); i += 4 {
+		encrypt(state[i:i+4], expkey)
 	}
 
 	for i := range state {
@@ -37,9 +35,8 @@ func TestBoth(t *testing.T) {
 	}
 	fmt.Println(string(b))
 
-	for i := 0; i < len(state); {
-		encrypt(state[i:i+nwords], expkey)
-		i += 4
+	for i := 0; i < len(state); i += 4 {
+		decrypt(state[i:i+4], expkey)
 	}
 
 	for i := range state {
@@ -52,7 +49,7 @@ func TestBoth(t *testing.T) {
 }
 
 func TestEncryptDecrypt(t *testing.T) {
-	key := "YELLOW SUBMARINE"
+	key := "PURPLE SIDEKICKS"
 	expkey := keyExpansion([]byte(key))
 	enc := func(state []uint32) {
 		encrypt(state, expkey)
