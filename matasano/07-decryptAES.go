@@ -1,16 +1,13 @@
 package matasano
 
-import (
-	"encoding/base64"
-	"io/ioutil"
-)
+import "io/ioutil"
 
 // DecryptAES decrypts a ciphertext encrypted with AES in ECB mode.
 // This solves http://cryptopals.com/sets/1/challenges/7/
 func DecryptAES(filepath string, key []byte) string {
 	encoded, _ := ioutil.ReadFile(filepath)
 	b := make([]byte, (len(encoded)/4)*3)
-	base64.StdEncoding.Decode(b, encoded)
+	DecodeBase64(b, encoded)
 
 	state := make([]uint32, len(b)/4)
 	for i := 0; i < len(state); i += 4 {
