@@ -1,7 +1,6 @@
 package matasano
 
 import (
-	"fmt"
 	"math/rand"
 	"testing"
 	"time"
@@ -9,7 +8,10 @@ import (
 
 func TestDecryptAES(t *testing.T) {
 	plaintext := DecryptAES("07-data.txt", []byte("YELLOW SUBMARINE"))
-	fmt.Println(plaintext[0:160])
+	expectedstart := "I'm back and I'm"
+	if string(plaintext[0:16]) != expectedstart {
+		t.Fatalf("Start of the plaintext was not - %s", expectedstart)
+	}
 }
 
 func TestBoth(t *testing.T) {
@@ -19,33 +21,31 @@ func TestBoth(t *testing.T) {
 
 	b := []byte(plaintext)
 	state := make([]uint32, len(b)/4)
-	for i := range state {
-		state[i] = uint32(b[i*4])<<24 | uint32(b[i*4+1])<<16 | uint32(b[i*4+2])<<8 | uint32(b[i*4+3])
+	for i := 0; i < len(state); i += 4 {
+		for j := 0; j < 4; j++ {
+			state[i+j] = uint32(b[i*4+j])<<24 | uint32(b[(i+1)*4+j])<<16 | uint32(b[(i+2)*4+j])<<8 | uint32(b[(i+3)*4+j])
+		}
 	}
 
 	for i := 0; i < len(state); i += 4 {
 		encrypt(state[i:i+4], expkey)
 	}
 
-	for i := range state {
-		b[i*4] = byte((state[i] >> 24) & 0xff)
-		b[i*4+1] = byte((state[i] >> 16) & 0xff)
-		b[i*4+2] = byte((state[i] >> 8) & 0xff)
-		b[i*4+3] = byte((state[i]) & 0xff)
-	}
-	fmt.Println(string(b))
-
 	for i := 0; i < len(state); i += 4 {
 		decrypt(state[i:i+4], expkey)
 	}
 
-	for i := range state {
-		b[i*4] = byte((state[i] >> 24) & 0xff)
-		b[i*4+1] = byte((state[i] >> 16) & 0xff)
-		b[i*4+2] = byte((state[i] >> 8) & 0xff)
-		b[i*4+3] = byte((state[i]) & 0xff)
+	for i := 0; i < len(state); i += 4 {
+		for j := 0; j < 4; j++ {
+			b[(i+0)*4+j] = byte(state[i+j] >> 24)
+			b[(i+1)*4+j] = byte((state[i+j] >> 16) & 0xff)
+			b[(i+2)*4+j] = byte((state[i+j] >> 8) & 0xff)
+			b[(i+3)*4+j] = byte((state[i+j]) & 0xff)
+		}
 	}
-	fmt.Println(string(b))
+	if string(b) != plaintext {
+		t.Fatalf("Encrypt and Decrypt do not invert each other.")
+	}
 }
 
 func TestEncryptDecrypt(t *testing.T) {
