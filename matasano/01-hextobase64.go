@@ -80,11 +80,11 @@ func EncodeBase64(dst, src []byte) {
 	}
 	switch len(src[i:len(src)]) {
 	case 2:
-		src = pad(src, 1)
+		src = padBase64(src, 1)
 		encode4Base64Bytes(dst[j:j+4], src[i:i+3])
 		dst[j+3] = 64 // equality symbol
 	case 1:
-		src = pad(src, 2)
+		src = padBase64(src, 2)
 		encode4Base64Bytes(dst[j:j+4], src[i:i+3])
 		dst[j+3] = 64
 		dst[j+2] = 64
@@ -101,7 +101,7 @@ func encode4Base64Bytes(dst, src []byte) {
 	dst[3] = (src[2] & ((1 << 6) - 1))
 }
 
-func pad(b []byte, n int) []byte {
+func padBase64(b []byte, n int) []byte {
 	t := make([]byte, n)
 	for _, l := range t {
 		b = append(b, l)
