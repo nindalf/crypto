@@ -59,13 +59,8 @@ func subBytes(state []uint32) {
 }
 
 func addRoundKey(state, key []uint32) {
-	for i := uint(0); i < 4; i++ {
-		a0 := key[0] >> ((3 - i) * 8) & 0xff
-		a1 := key[1] >> ((3 - i) * 8) & 0xff
-		a2 := key[2] >> ((3 - i) * 8) & 0xff
-		a3 := key[3] >> ((3 - i) * 8) & 0xff
-		k := a0<<24 | a1<<16 | a2<<8 | a3
-		state[i] = state[i] ^ k
+	for i := range state {
+		state[i] = state[i] ^ key[i]
 	}
 }
 
@@ -154,6 +149,9 @@ func keyExpansion(key []byte) []uint32 {
 
 		i += nwords
 	}
+	for j := 0; j < len(expkeys); j += 4 {
+		transpose(expkeys[j : j+4])
+	}
 
 	return expkeys
 }
@@ -184,4 +182,18 @@ func invSubWord(input uint32) uint32 {
 		uint32(sbox1[input>>16&0xff])<<16 |
 		uint32(sbox1[input>>8&0xff])<<8 |
 		uint32(sbox1[input&0xff])
+}
+
+func transpose(input []uint32) {
+	var c0, c1, c2, c3 uint32
+	for i := uint(0); i < 4; i++ {
+		c0 |= (input[i] >> 24) << (8 * (3 - i))
+		c1 |= (input[i] >> 16 & 0xff) << (8 * (3 - i))
+		c2 |= (input[i] >> 8 & 0xff) << (8 * (3 - i))
+		c3 |= (input[i] & 0xff) << (8 * (3 - i))
+	}
+	input[0] = c0
+	input[1] = c1
+	input[2] = c2
+	input[3] = c3
 }

@@ -8,13 +8,13 @@ import (
 
 func TestKeyExpansion(t *testing.T) {
 	key := "YELLOW SUBMARINE"
-	expandedkey := []uint32{1497713740, 1331109971, 1430408513, 1380535877, 1667899980,
-		742195743, 2038386526, 724959515, 1679199677, 1210814370, 827638012, 442679783,
-		3396213023, 2185598653, 3004257857, 2842924966, 1306934732, 3483609969, 2092105008,
-		3586222742, 635743695, 3930523326, 2532703118, 1127518488, 493158613, 4146202219,
-		1641545189, 585329917, 1278563398, 3138867757, 3670061000, 4163093301, 3927687687,
-		1359777834, 2345418722, 1945107671, 783010952, 2141674658, 4100678464, 2273615767,
-		1198539935, 953620541, 3434904445, 1262019818}
+	expandedkey := []uint32{0x594f5552, 0x45574249, 0x4c204d4e, 0x4c534145, 0x632c792b,
+		0x6a3d7f36, 0x22024f01, 0x4c1f5e1b, 0x6448311a, 0x162b5462, 0x8d8fc0c1, 0xbda2fce7,
+		0xca82b3a9, 0x6e451173, 0x19965697, 0x1fbd41a6, 0x4dcf7cd5, 0xe6a3b2c1, 0x3dabfd6a,
+		0xcc713096, 0x25ea9643, 0xe447f534, 0xad06fb91, 0xcfbe8e18, 0x1df76122, 0x6522d7e3,
+		0x6fd6c, 0xd56be5fd, 0x4cbbdaf8, 0x3517c023, 0x5452afc3, 0x462dc835, 0xea518b73,
+		0x1b0cccef, 0xc2903ffc, 0x72ae2d7, 0x2e7ff487, 0xaba76b84, 0xcc5c639f, 0x88a24097,
+		0x4738cc4b, 0x70d7bc38, 0x44187be4, 0x9f3d7dea}
 	actual := keyExpansion([]byte(key))
 	for i := range expandedkey {
 		if expandedkey[i] != actual[i] {
@@ -91,6 +91,21 @@ func TestBothShiftRows(t *testing.T) {
 
 func TestBothSubWords(t *testing.T) {
 	testForwardAndInverse(t, subBytes, invSubBytes, "Substitution")
+}
+
+func TestTranspose(t *testing.T) {
+	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
+	expected := []uint32{0x8e4da1bc, 0x9fdc589d, 0x01010101, 0xc6c6c6c6}
+	transpose(input)
+	for i := 0; i < 4; i++ {
+		if input[i] != expected[i] {
+			t.Fatalf("Transpose failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
+		}
+	}
+}
+
+func TestTransposeInverse(t *testing.T) {
+	testForwardAndInverse(t, transpose, transpose, "Transpose")
 }
 
 func testForwardAndInverse(t *testing.T, forward, inverse func([]uint32), name string) {
