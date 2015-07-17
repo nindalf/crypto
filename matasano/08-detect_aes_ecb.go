@@ -1,26 +1,17 @@
 package matasano
 
-import (
-	"io/ioutil"
-	"strings"
-)
-
 // DetectAESECB detects which line is likely to be encoded by AES in ECB mode
 // This solves http://cryptopals.com/sets/1/challenges/8/
-func DetectAESECB(filepath string) (string, error) {
-	lines, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		return "", err
-	}
+func DetectAESECB(lines []string) string {
 	var result string
 	var blockScore int
-	for _, line := range strings.Split(string(lines), "\n") {
+	for _, line := range lines {
 		if similarBlocks(line) > blockScore {
 			result = line
 			blockScore = similarBlocks(line)
 		}
 	}
-	return result, nil
+	return result
 }
 
 func similarBlocks(line string) int {

@@ -5,20 +5,25 @@ import (
 	"testing"
 )
 
-const (
-	datafile = "06-data.txt"
-)
+const datafile06 = "06-data.txt"
 
-func TestDecryptFile(t *testing.T) {
-	actkey, plaintext := DecryptFile(datafile)
+func TestDecryptRepeatedXOR(t *testing.T) {
+	encoded, err := ioutil.ReadFile(datafile06)
+	if err != nil {
+		t.Fatal(err)
+	}
+	b := make([]byte, (len(encoded)/4)*3)
+	DecodeBase64(b, encoded)
+
+	actkey, plaintext := DecryptRepeatedXOR(b)
 	expkey := "Terminator X: Bring the noise"
 	if expkey != actkey {
-		t.Fatalf("Inputs - %s\nExptected key - %s\nActual key - %s\nPlaintext -\n%s", datafile, expkey, actkey, plaintext)
+		t.Fatalf("Inputs - %s\nExptected key - %s\nActual key - %s\nPlaintext -\n%s", datafile06, expkey, actkey, plaintext)
 	}
 }
 
 func TestKeySize(t *testing.T) {
-	encoded, err := ioutil.ReadFile(datafile)
+	encoded, err := ioutil.ReadFile(datafile06)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -27,7 +32,7 @@ func TestKeySize(t *testing.T) {
 	expected := 29
 	actual := keysize(b)
 	if expected != actual {
-		t.Fatalf("Inputs - %s\nExptected - %d\nActual - %d", datafile, expected, actual)
+		t.Fatalf("Inputs - %s\nExptected - %d\nActual - %d", datafile06, expected, actual)
 	}
 }
 

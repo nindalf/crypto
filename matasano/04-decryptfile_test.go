@@ -1,10 +1,22 @@
 package matasano
 
-import "testing"
+import (
+	"bytes"
+	"io/ioutil"
+	"testing"
+)
 
-func TestFindLine(t *testing.T) {
+const datafile04 = "04-data.txt"
+
+func TestFindXORLine(t *testing.T) {
+	b, err := ioutil.ReadFile(datafile04)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	lines := bytes.Split(b, []byte("\n"))
+	decrypted, line, key := FindXORLine(lines)
 	expected := "Now that the party is jumping\n"
-	decrypted, line, key := FindLine("04-data.txt")
 	if expected != string(decrypted) {
 		t.Fatalf("Expected - %s\nFound - %s from %s, Key - %s", expected, string(decrypted), string(line), string(key))
 	}

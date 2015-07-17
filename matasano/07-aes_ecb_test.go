@@ -6,8 +6,14 @@ import (
 	"testing"
 )
 
+const datafile07 = "07-data.txt"
+
 func TestDecryptAESECB(t *testing.T) {
-	encoded, _ := ioutil.ReadFile("07-data.txt")
+	encoded, err := ioutil.ReadFile(datafile07)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	b := make([]byte, (len(encoded)/4)*3)
 	DecodeBase64(b, encoded)
 	key := []byte("YELLOW SUBMARINE")
