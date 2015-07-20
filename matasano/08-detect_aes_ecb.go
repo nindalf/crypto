@@ -17,9 +17,8 @@ func DetectAESECB(lines []string) string {
 func similarBlocks(line string) int {
 	var score int
 	blocks := make(map[string]int)
-	for i := 0; i < len(line); {
-		cur := line[i : i+32]
-		i += 32
+	for i := 0; i < len(line); i += 16 {
+		cur := line[i : i+16]
 		blocks[cur] = blocks[cur] + 1
 	}
 	for _, v := range blocks {
