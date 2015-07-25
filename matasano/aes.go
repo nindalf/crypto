@@ -69,10 +69,10 @@ func invMixColumns(state []uint32) {
 	// a0-3 represent the bytes of a column
 	// r0-3 are the transformed bytes
 	calcInvMixCols := func(a0, a1, a2, a3 byte) (r0, r1, r2, r3 byte) {
-		r0 = gMulBy14[a0] ^ gMulBy11[a1] ^ gMulBy13[a2] ^ gMulBy9[a3]
-		r1 = gMulBy9[a0] ^ gMulBy14[a1] ^ gMulBy11[a2] ^ gMulBy13[a3]
-		r2 = gMulBy13[a0] ^ gMulBy9[a1] ^ gMulBy14[a2] ^ gMulBy11[a3]
-		r3 = gMulBy11[a0] ^ gMulBy13[a1] ^ gMulBy9[a2] ^ gMulBy14[a3]
+		r0 = gMulBy14[a0] ^ gMulBy11[a1] ^ gMulBy13[a2] ^ gMulBy9[a3] // 14*a0 + 11*a1 + 13*a2 +  9*a3
+		r1 = gMulBy9[a0] ^ gMulBy14[a1] ^ gMulBy11[a2] ^ gMulBy13[a3] //  9*a0 + 14*a1 + 11*a2 + 13*a3
+		r2 = gMulBy13[a0] ^ gMulBy9[a1] ^ gMulBy14[a2] ^ gMulBy11[a3] // 13*a0 +  9*a1 + 14*a2 + 11*a3
+		r3 = gMulBy11[a0] ^ gMulBy13[a1] ^ gMulBy9[a2] ^ gMulBy14[a3] // 11*a0 + 13*a1 +  9*a2 + 14*a3
 		return
 	}
 	manipulateColumns(state, calcInvMixCols)
@@ -83,10 +83,10 @@ func mixColumns(state []uint32) {
 	// a0-3 represent the bytes of a column
 	// r0-3 are the transformed bytes
 	calcMixCols := func(a0, a1, a2, a3 byte) (r0, r1, r2, r3 byte) {
-		r0 = gMulBy2[a0] ^ gMulBy3[a1] ^ a2 ^ a3
-		r1 = a0 ^ gMulBy2[a1] ^ gMulBy3[a2] ^ a3
-		r2 = a0 ^ a1 ^ gMulBy2[a2] ^ gMulBy3[a3]
-		r3 = gMulBy3[a0] ^ a1 ^ a2 ^ gMulBy2[a3]
+		r0 = gMulBy2[a0] ^ gMulBy3[a1] ^ a2 ^ a3 // 2*a0 + 3*a1 + a2   + a3
+		r1 = a0 ^ gMulBy2[a1] ^ gMulBy3[a2] ^ a3 // a0   + 2*a1 + 3*a2 + a3
+		r2 = a0 ^ a1 ^ gMulBy2[a2] ^ gMulBy3[a3] // a0   + a1   + 2*a2 + 3*a3
+		r3 = gMulBy3[a0] ^ a1 ^ a2 ^ gMulBy2[a3] // 3*a0 + a1   + a2   + 2*a3
 		return
 	}
 	manipulateColumns(state, calcMixCols)
