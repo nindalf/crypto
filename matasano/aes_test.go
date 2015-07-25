@@ -39,73 +39,69 @@ func TestEncryptDecrypt(t *testing.T) {
 func TestMixColumns(t *testing.T) {
 	input := []uint32{0xdbf201c6, 0x130a01c6, 0x532201c6, 0x455c01c6}
 	expected := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
-	mixColumns(input)
-	for i := 0; i < 4; i++ {
-		if input[i] != expected[i] {
-			t.Fatalf("Mix columns failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
-		}
-	}
+	testOperation(t, mixColumns, input, expected, "MixColumns")
 }
 
 // test vectors reversed from TestMixColumns
 func TestInvMixColumns(t *testing.T) {
 	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	expected := []uint32{0xdbf201c6, 0x130a01c6, 0x532201c6, 0x455c01c6}
-	invMixColumns(input)
-	for i := 0; i < 4; i++ {
-		if input[i] != expected[i] {
-			t.Fatalf("Mix columns failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
-		}
-	}
+	testOperation(t, invMixColumns, input, expected, "InvMixColumns")
 }
 
 func TestBothMixColumns(t *testing.T) {
-	testForwardAndInverse(t, mixColumns, invMixColumns, "Mix columns")
+	testForwardAndInverse(t, mixColumns, invMixColumns, "MixColumns")
 }
 
 func TestShiftRows(t *testing.T) {
 	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	expected := []uint32{0x8e9f01c6, 0xdc01c64d, 0x01c6a158, 0xc6bc9d01}
-	shiftRows(input)
-	for i := 0; i < 4; i++ {
-		if input[i] != expected[i] {
-			t.Fatalf("Shift rows failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
-		}
-	}
+	testOperation(t, shiftRows, input, expected, "ShiftRows")
 }
 
 func TestInvShiftRows(t *testing.T) {
 	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	expected := []uint32{0x8e9f01c6, 0xc64ddc01, 0x01c6a158, 0x9d01c6bc}
-	invShiftRows(input)
-	for i := 0; i < 4; i++ {
-		if input[i] != expected[i] {
-			t.Fatalf("Shift rows failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
-		}
-	}
+	testOperation(t, invShiftRows, input, expected, "InvShiftRows")
 }
 
 func TestBothShiftRows(t *testing.T) {
-	testForwardAndInverse(t, shiftRows, invShiftRows, "Shift rows")
+	testForwardAndInverse(t, shiftRows, invShiftRows, "ShiftRows")
 }
 
-func TestBothSubWords(t *testing.T) {
+func TestSubBytes(t *testing.T) {
+	input := []uint32{0x8e9ff1c6, 0x4ddce1c7, 0xa158d1c8, 0xbc9dc1c9}
+	expected := []uint32{0x19dba1b4, 0xe386f8c6, 0x326a3ee8, 0x655e78dd}
+	testOperation(t, subBytes, input, expected, "SubBytes")
+}
+
+func TestInvSubBytes(t *testing.T) {
+	input := []uint32{0x19dba1b4, 0xe386f8c6, 0x326a3ee8, 0x655e78dd}
+	expected := []uint32{0x8e9ff1c6, 0x4ddce1c7, 0xa158d1c8, 0xbc9dc1c9}
+	testOperation(t, invSubBytes, input, expected, "SubBytes")
+}
+
+func TestBothSubBytes(t *testing.T) {
 	testForwardAndInverse(t, subBytes, invSubBytes, "Substitution")
 }
 
 func TestTranspose(t *testing.T) {
 	input := []uint32{0x8e9f01c6, 0x4ddc01c6, 0xa15801c6, 0xbc9d01c6}
 	expected := []uint32{0x8e4da1bc, 0x9fdc589d, 0x01010101, 0xc6c6c6c6}
-	transpose(input)
-	for i := 0; i < 4; i++ {
-		if input[i] != expected[i] {
-			t.Fatalf("Transpose failed at index %d. Expected - 0x%x, Received - 0x%x", i, expected[i], input[i])
-		}
-	}
+	testOperation(t, transpose, input, expected, "Transpose")
 }
 
 func TestTransposeInverse(t *testing.T) {
 	testForwardAndInverse(t, transpose, transpose, "Transpose")
+}
+
+func testOperation(t *testing.T, operation func([]uint32), input, expected []uint32, name string) {
+	operation(input)
+	for i := range input {
+		if input[i] != expected[i] {
+			t.Fatalf("%s failed at index %d. Expected - 0x%x, Received - 0x%x", name, i, expected[i], input[i])
+		}
+	}
 }
 
 func testForwardAndInverse(t *testing.T, forward, inverse func([]uint32), name string) {
