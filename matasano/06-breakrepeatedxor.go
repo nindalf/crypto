@@ -32,9 +32,8 @@ func keysize(p []byte) int {
 	curdistance = (1 << 32) - 1
 	for i := minKeySize; i <= maxKeySize; i++ {
 		distance := 0
-		for j := 0; j < len(p)-i*2; {
+		for j := 0; j < len(p)-i*2; j += i {
 			distance += hammingdistance(p[j:j+i], p[j+i:j+2*i])
-			j += i
 		}
 		if curdistance > distance {
 			curdistance = distance

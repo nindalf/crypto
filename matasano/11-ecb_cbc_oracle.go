@@ -14,13 +14,20 @@ import (
 func OracleAES(ciphers [][]byte) []int {
 	guesses := make([]int, len(ciphers))
 	for i := range ciphers {
-		if similarBlocks(string(ciphers[i])) > 0 {
+		if isAESECB(ciphers[i]) {
 			guesses[i] = 1
 		} else {
 			guesses[i] = 0
 		}
 	}
 	return guesses
+}
+
+func isAESECB(b []byte) bool {
+	if similarBlocks(string(b)) > 0 {
+		return true
+	}
+	return false
 }
 
 // generateCiphertexts accepts a plaintext b and generates ciphertexts based on this procedure
