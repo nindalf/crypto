@@ -4,7 +4,8 @@ import "testing"
 
 func TestECBCBCOracle(t *testing.T) {
 	plaintexts := []string{
-		"Lorem ipsum dolor sit amet, consectetur adipiscing elit,00000000000000000000000000000000 sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 00000000000000000000000000000000Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+		"Lorem ipsum dolor sit amet, consectetur000000000000000000000000000000000000000000000000 adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
+		"Lorem ipsum dolor sit amet, consectetur adipiscing00000000000000000000000000000000 elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. 00000000000000000000000000000000Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.",
 		"Lorem ipsum dolor sit amet, consectetur adipiscing elit,abcdefghijklmnopqrstuvwxyz012345 sed do eiusmod tempor incididunt ut labore et dolore magna ali/abcdefghijklmnopqrstuvwxyz012345qua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."}
 	for _, plaintext := range plaintexts {
 		ciphers, expected := generateCiphertexts([]byte(plaintext))

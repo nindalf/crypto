@@ -6,10 +6,11 @@ import (
 )
 
 // OracleAES guesses whether a ciphertext has been encrypted with ECB mode (1) or not (0)
-// This only works if the plaintext contains either
-// 1. 2 or more identical 32-byte blocks of the same character
-// 2. 2 or more identical 32-byte blocks of any characters *but* separated by 16*n bytes (n=0,1,2,3...)
-// The test file contains an example of both
+// This only works if the plaintext contains one of
+// 1. 1 or more 48-byte blocks of the same character
+// 2. 2 or more identical 32-byte blocks of the same character
+// 3. 2 or more identical 32-byte blocks of any characters *but* separated by 16*n bytes (n=0,1,2,3...)
+// The test file contains an example of each
 // This solves http://cryptopals.com/sets/2/challenges/10/
 func OracleAES(ciphers [][]byte) []int {
 	guesses := make([]int, len(ciphers))
