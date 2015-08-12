@@ -13,3 +13,15 @@ func TestPadPCKCS7(t *testing.T) {
 		}
 	}
 }
+
+func TestStripPKCS7(t *testing.T) {
+	inputs := []string{"YELLOW SUBMARINE\x04\x04\x04\x04", "TWENTY BYTELONG PARTYELLOW SUBMARINERS\x02\x02", "YELLOW\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e\x0e",
+		"20 YELLOW SUBMARINES\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14\x14"}
+	expected := []string{"YELLOW SUBMARINE", "TWENTY BYTELONG PARTYELLOW SUBMARINERS", "YELLOW", "20 YELLOW SUBMARINES"}
+	for i, input := range inputs {
+		result, err := stripPKCS7([]byte(input))
+		if string(result) != expected[i] || err != nil {
+			t.Fatalf("PKCS#7 stripping failed. Expected %x - Received %x\nError - %s", expected[i], result, err)
+		}
+	}
+}
