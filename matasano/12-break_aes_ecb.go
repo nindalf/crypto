@@ -2,19 +2,19 @@ package matasano
 
 import "bytes"
 
-var (
-	bsize = 16
-	key   = randbytes(16)
-)
+const bsize = 16
+
+// Used when a random key needs to be used repeatedly
+var rkey = randbytes(16)
 
 //  a function that produces: AES-128-ECB(b || unknown-string, random-key)
-func oracle(b []byte) []byte {
+func oracle12(b []byte) []byte {
 	plaintext := []byte("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
 	dec := make([]byte, (3*len(plaintext))/4)
 	DecodeBase64(dec, plaintext)
 	b = append(b, dec...)
 	b = padPKCS7(b, 16)
-	EncryptAESECB(b, key)
+	EncryptAESECB(b, rkey)
 	return b
 }
 
@@ -47,7 +47,7 @@ func decryptbyte(chosen, previous []byte) byte {
 	previous = append(previous, byte(0))
 	for i := 0; i < 255; i++ {
 		previous[bsize-1] = byte(i)
-		if bytes.Equal(oracle(previous)[0:bsize], chosen) {
+		if bytes.Equal(oracle12(previous)[0:bsize], chosen) {
 			return byte(i)
 		}
 	}
@@ -57,11 +57,11 @@ func decryptbyte(chosen, previous []byte) byte {
 func genChosenCiphers() [][]byte {
 	chosens := make([][]byte, 0, bsize)
 	prefix := make([]byte, 0, bsize-1)
-	chosens = append(chosens, oracle(prefix))
+	chosens = append(chosens, oracle12(prefix))
 	var x byte
 	for i := 0; i < bsize-1; i++ {
 		prefix = append(prefix, x)
-		chosens = append(chosens, oracle(prefix))
+		chosens = append(chosens, oracle12(prefix))
 	}
 	return chosens
 }
