@@ -9,25 +9,27 @@ import (
 )
 
 var (
-	uid    = rand.Intn(100)
+	uid    = rand.Intn(100000)
 	keys13 = []string{"email", "uid", "role"}
 )
 
 // CreateAdminProfile creates a profile where the role is "admin"
 // It does so by repeated calls to the profilefor() oracle
+// Assumptions made: email will be the first param, role will be the last.
 // This solves http://cryptopals.com/sets/2/challenges/13
 func CreateAdminProfile() []byte {
-	chosen := newRole()
+	frontpad := 16 - len("email=") // assumption that email will be the first parameter
+	chosen := newRole(frontpad)
 	b := encryptProfile(profilefor(chosen))
+
+	encryptedadmin := make([]byte, 16)
+	copy(encryptedadmin, b[16:32])
+
 	blen := len(b)
 	for len(b) == blen {
 		chosen = "x" + chosen
 		b = encryptProfile(profilefor(chosen))
 	}
-
-	encryptedadmin := make([]byte, 16)
-	b = encryptProfile(profilefor("x" + chosen))
-	copy(encryptedadmin, b[16:32]) //assumption that our role block will be the second block
 
 	fakeemail := newEmail(len(chosen) + len("user"))
 	b = encryptProfile(profilefor(fakeemail))
@@ -36,14 +38,16 @@ func CreateAdminProfile() []byte {
 	return b
 }
 
-func newRole() string {
+func newRole(frontpad int) string {
 	role := []byte("admin")
 	role = padPKCS7(role, 16)
-	return string(role)
+	pad := make([]byte, frontpad)
+	pad = append(pad, role...)
+	return string(pad)
 }
 
 func newEmail(n int) string {
-	email := "AChosenEmailOnADomainWeControl"
+	email := "AChosenEmailOfAppropriateLengthOnADomainWeControl"
 	domain := "@nindalf.com"
 	return email[0:n-len(domain)] + domain
 }

@@ -11,8 +11,9 @@ func TestCreateAdminProfile(t *testing.T) {
 	if len(profile) != expectedlen {
 		t.Fatalf("Returned profile is not of length %d", expectedlen)
 	}
-	if profile["role"] != "admin" {
-		t.Fatalf("Role is not admin")
+	expectedrole := "admin"
+	if profile["role"] != expectedrole {
+		t.Fatalf("Expected role - %s\tActual role - %s", expectedrole, profile["role"])
 	}
 }
 
