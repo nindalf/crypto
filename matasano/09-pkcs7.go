@@ -7,9 +7,6 @@ import "errors"
 // This solves http://cryptopals.com/sets/2/challenges/9/
 func padPKCS7(input []byte, n int) []byte {
 	np := n - (len(input) % n)
-	if np == 0 {
-		np = n
-	}
 	padding := byte(np) - byte(0)
 	for i := 0; i < np; i++ {
 		input = append(input, padding)
