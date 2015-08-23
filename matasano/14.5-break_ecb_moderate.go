@@ -49,7 +49,7 @@ func setupHelper() {
 
 // BreakECBModerate decrypts a ciphertext received from the oracle function (defined above)
 // It does so by repeated calls to the oracle
-// This solves http://cryptopals.com/sets/2/challenges/12/
+// This solves http://cryptopals.com/sets/2/challenges/14/
 func BreakECBModerate() []byte {
 	setupHelper()
 	chosens := genChosenCiphersEasy()
