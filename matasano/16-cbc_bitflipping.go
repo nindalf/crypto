@@ -15,18 +15,18 @@ func FlipCBC(b []byte) []byte {
 	return b
 }
 
-func encrypt16(input string) []byte {
+func encrypt16(input string) ([]byte, []uint32) {
 	input = strings.Replace(input, ";", "", -1)
 	input = strings.Replace(input, "=", "", -1)
 	b := []byte("comment1=cooking%20MCs;userdata=" + input + ";comment2=%20like%20a%20pound%20of%20bacon")
 	b = padPKCS7(b, 16)
-	EncryptAESCBC(b, rkey)
-	return b
+	iv := EncryptAESCBC(b, rkey)
+	return b, iv
 }
 
 // returns true if b contains ";admin=true;"
-func decrypt16(b []byte) bool {
-	DecryptAESCBC(b, rkey)
+func decrypt16(b []byte, iv []uint32) bool {
+	DecryptAESCBC(b, rkey, iv)
 	s := string(b)
 	return strings.Contains(s, "admin=true")
 }
