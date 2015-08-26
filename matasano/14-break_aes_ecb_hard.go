@@ -3,11 +3,12 @@ package matasano
 import (
 	"bytes"
 	"errors"
+	"fmt"
 	"math/rand"
 	"time"
 )
 
-//  a function that produces: AES-128-ECB(b || unknown-string, random-key)
+//  a function that produces: AES-128-ECB(random-text-of-random-length || b || unknown-string, random-key)
 func oraclehard(b []byte) []byte {
 	plaintext := []byte("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
 	dec := make([]byte, (3*len(plaintext))/4)
@@ -25,28 +26,101 @@ func oraclehard(b []byte) []byte {
 // It does so by repeated calls to the oracle
 // This solves http://cryptopals.com/sets/2/challenges/14/
 func BreakECBHard() []byte {
-	chosens := genChosenCiphersEasy()
+	chosens, previous := genChosenCiphersHard()
 	var decrypted bytes.Buffer
-	previous := make([]byte, bsize, len(chosens[0]))
-	for i := 0; i < len(chosens[0]); i += bsize {
-		previous = decrypt16bytesEasy(chosens, previous, i)
-		decrypted.Write(previous)
+	for i := 0; i < 160; i += bsize {
+		previous = decrypt16bytesHard(chosens, previous, i)
+		fmt.Println(string(previous))
+		decrypted.Write(previous) // reverse
 	}
 	return decrypted.Bytes()
 }
 
-func genChosenCiphersHard() [][]byte {
+func decrypt16bytesHard(chosens [][]byte, previous []byte, index int) []byte {
+	decrypted := make([]byte, bsize)
+	for i := bsize - 1; i >= 0; i-- {
+		previous = previous[0 : len(previous)-1]
+		l := len(chosens[i])
+		dec := decryptbyteHard(chosens[i][l-index-32:l-index-16], previous)
+		fmt.Print(dec)
+		previous = append([]byte{dec}, previous...)
+		decrypted[i] = dec
+	}
+	return decrypted
+}
+
+func decryptbyteHard(chosen, previous []byte) byte {
+	previous = append([]byte{0}, previous...)
+	temp := make([]byte, bsize)
+	for i := 0; i < 255; i++ {
+		copy(temp, previous)
+		temp[0] = byte(i)
+		temp, _ := encryptBlock(temp)
+		if bytes.Equal(temp, chosen) {
+			return byte(i)
+		}
+	}
+	return 0
+}
+
+// generates chosen ciphertexts and the last decrypted block
+func genChosenCiphersHard() ([][]byte, []byte) {
 	chosens := make([][]byte, 0, bsize)
-	existing := make(map[string]bool)
-	chosen := make([]byte, 64)
+	existing := make(map[string]int)
+	chosen := make([]byte, 48)
+	var i int
 	for len(chosens) != bsize {
 		b := oraclehard(chosen)
 		lastblock := string(b[len(b)-16 : len(b)])
 		if _, ok := existing[lastblock]; ok == false {
-			chosens = append(chosens, b)
+			cutoff := getSimilarityCutoff(b)
+			chosens = append(chosens, b[cutoff:len(b)])
+			existing[lastblock] = i
+			i++
 		}
 	}
-	return chosens
+	orderedChosens := make([][]byte, bsize)
+	guessed, temp := make([]byte, 0, 16), make([]byte, 16)
+	var err error
+	for i := 15; i > 0; i-- {
+		bc := make([]byte, 1, 16)
+		bc = append(bc, guessed...)
+		bc = padPKCS7(bc, 16)
+		for j := 0; j < 256; j++ {
+			bc[0] = byte(j)
+			copy(temp, bc)
+			temp, err = encryptBlock(temp)
+			if err != nil {
+				fmt.Printf("Trouble encrypting %v, %s\n", bc, err)
+			}
+
+			if index, ok := existing[string(temp)]; ok {
+				orderedChosens[i] = chosens[index]
+				chosens[index] = make([]byte, 0)
+				t := make([]byte, 1, 16)
+				t[0] = byte(j)
+				guessed = append(t, guessed...)
+				break
+			}
+		}
+	}
+	for i := range chosens {
+		if len(chosens[i]) > 0 {
+			orderedChosens[0] = chosens[i]
+		}
+	}
+	fmt.Println(guessed)
+	return orderedChosens, guessed
+}
+
+func getSimilarityCutoff(b []byte) int {
+	s := string(b)
+	for i := 0; i < len(s)-32; i += 16 {
+		if s[i:i+16] == s[i+16:i+32] {
+			return i + 32
+		}
+	}
+	return 0
 }
 
 // encrypts a 16 byte block under the uknown key
@@ -66,7 +140,7 @@ func encryptBlock(b []byte) ([]byte, error) {
 		enc = oraclehard(block)
 	}
 	s := string(enc)
-	for i := 0; i < len(s); i += 16 {
+	for i := 0; i < len(s)-80; i += 16 {
 		if s[i:i+16] == s[i+16:i+32] && s[i:i+16] != s[i+32:i+48] && s[i:i+16] == s[i+48:i+64] && s[i:i+16] == s[i+64:i+80] {
 			return []byte(s[i+32 : i+48]), nil
 		}
