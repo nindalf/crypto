@@ -2,6 +2,8 @@ package matasano
 
 import "errors"
 
+var errPaddingMalformed = errors.New("PKCS7 malformed")
+
 // This pads an input array of bytes till it is a multiple of n bytes in length
 // Described more here - https://en.wikipedia.org/wiki/Padding_%28cryptography%29#PKCS7
 // This solves http://cryptopals.com/sets/2/challenges/9/
@@ -17,9 +19,12 @@ func padPKCS7(input []byte, n int) []byte {
 func stripPKCS7(input []byte) ([]byte, error) {
 	l := len(input) - 1
 	n := int(input[l])
+	if n < 1 {
+		return input, errPaddingMalformed
+	}
 	for i := l; i > l-n; i-- {
 		if input[i] != input[l] {
-			return input, errors.New("PKCS7 malformed")
+			return input, errPaddingMalformed
 		}
 	}
 	return input[0 : l-n+1], nil
