@@ -12,15 +12,14 @@ const (
 func DecryptRepeatedXOR(b []byte) (string, string) {
 	ksize := keysize(b)
 	buffers := make([]bytes.Buffer, ksize)
-	for i := 0; i < len(b)-ksize; {
-		for j := 0; j < len(buffers); j++ {
+	for i := 0; i < len(b)-ksize+1; i += ksize {
+		for j := range buffers {
 			buffers[j].WriteByte(b[i+j])
 		}
-		i += ksize
 	}
 	var key bytes.Buffer
-	for i := 0; i < len(buffers); i++ {
-		_, _, keybyte := DecryptXor(buffers[i].Bytes())
+	for i := range buffers {
+		_, _, keybyte := BreakSingleXor(buffers[i].Bytes())
 		key.WriteByte(keybyte)
 	}
 
@@ -40,7 +39,6 @@ func keysize(p []byte) int {
 			curkeysize = i
 		}
 	}
-
 	return curkeysize
 }
 

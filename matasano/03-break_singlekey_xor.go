@@ -1,10 +1,5 @@
 package matasano
 
-const (
-	minASCII = 32
-	maxASCII = 126
-)
-
 // approximate frequencies of letters used in the english language
 // ETAOIN = 3, SHRDLU = 2.5, FGPWY = 2, B = 1.5, KV = 1.0, JX = 0.5, QZ = 0.1
 // based on http://en.wikipedia.org/wiki/Letter_frequency
@@ -17,21 +12,21 @@ var letterfreq = map[byte]float64{'a': 3.0, 'A': 3.0,
 	'q': 0.1, 'Q': 0.1, 'r': 2.5, 'R': 2.5, 's': 2.5, 'S': 2.5,
 	't': 3.0, 'T': 3.0, 'u': 2.5, 'U': 2.5, 'v': 1.0, 'V': 1.0,
 	'w': 2.0, 'W': 2.0, 'x': 0.5, 'X': 0.5, 'y': 2.0, 'Y': 2.0,
-	'z': 0.1, 'Z': 0.1, ' ': 3}
+	'z': 0.1, 'Z': 0.1, ' ': 3.0, '.': 1.0, ',': 1.0, ':': 1.0}
 
-// DecryptXor decrypts an array of bytes by XOR-ing it with all possible letters and choosing the
+// BreakSingleXor decrypts an array of bytes by XOR-ing it with all possible letters and choosing the
 // array with the highest rank.
 // It returns the decrypted byte array, the rank of that array and the key used to decrypt it
 // This solves http://cryptopals.com/sets/1/challenges/3/
-func DecryptXor(input []byte) ([]byte, float64, byte) {
+func BreakSingleXor(input []byte) ([]byte, float64, byte) {
 	var result []byte
 	var currank float64
 	var rkey byte
-	for i := minASCII; i <= maxASCII; i++ {
+	for i := 0; i <= 255; i++ {
 		key := byte(i)
 		decrypted := XorOne(input, key)
 		rank := getrank(decrypted)
-		if currank < rank {
+		if currank <= rank {
 			currank = rank
 			result = decrypted
 			rkey = key
