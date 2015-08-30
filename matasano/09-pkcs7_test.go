@@ -24,4 +24,12 @@ func TestStripPKCS7(t *testing.T) {
 			t.Fatalf("PKCS#7 stripping failed. Expected %x - Received %x\nError - %s", expected[i], result, err)
 		}
 	}
+
+	fails := []string{"YELLOW SUBMARINE\x04\x04\x04", "YELLOW SUBMARINE\x00"}
+	for _, fail := range fails {
+		_, err := stripPKCS7([]byte(fail))
+		if err != errPaddingMalformed {
+			t.Fatalf("PKCS#7 stripping failed. Expected %s", errPaddingMalformed)
+		}
+	}
 }
