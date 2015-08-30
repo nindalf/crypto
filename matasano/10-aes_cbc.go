@@ -1,9 +1,6 @@
 package matasano
 
-import (
-	"math/rand"
-	"time"
-)
+import "crypto/rand"
 
 // DecryptAESCBC decrypts a ciphertext encrypted with AES in CBC mode.
 // This solves http://cryptopals.com/sets/2/challenges/10/
@@ -25,17 +22,21 @@ func DecryptAESCBC(b, key []byte, iv []uint32) {
 	unpack(b, state)
 }
 
-// EncryptAESCBC encrypts a plaintext with AES in ECB mode.
+// EncryptAESCBC encrypts a plaintext with AES in CBC mode.
 func EncryptAESCBC(b, key []byte) []uint32 {
 	state := make([]uint32, len(b)/4)
 	pack(b, state)
 
 	expkey := keyExpansion(key)
 
-	rand.Seed(time.Now().UnixNano())
-	iv := []uint32{rand.Uint32(), rand.Uint32(), rand.Uint32(), rand.Uint32()}
-	c := make([]uint32, 4)
-	copy(c, iv)
+	iv, ivcopy := []uint32{0, 0, 0, 0}, []uint32{0, 0, 0, 0}
+	r := make([]byte, 16)
+	_, err := rand.Read(r)
+	if err != nil {
+		return iv
+	}
+	pack(r, iv)
+	copy(ivcopy, iv)
 
 	for i := 0; i < len(state); i += 4 {
 		for j := 0; j < 4; j++ {
@@ -46,5 +47,5 @@ func EncryptAESCBC(b, key []byte) []uint32 {
 	}
 
 	unpack(b, state)
-	return c
+	return ivcopy
 }

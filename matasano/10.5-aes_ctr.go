@@ -1,58 +1,48 @@
 package matasano
 
-import (
-	"fmt"
-	"math/rand"
-	"time"
-)
+import "crypto/rand"
 
 // DecryptAESCTR decrypts a ciphertext encrypted with AES in CTR mode.
 // This code does not work for ciphertexts longer than 2^32 blocks
 func DecryptAESCTR(b, key []byte, iv []uint32) {
-	state := make([]uint32, len(b)/4)
-	pack(b, state)
-	fmt.Printf("%x - %x\n", b[len(b)-16:len(b)], state[len(state)-4:len(state)])
-
-	expkey := keyExpansion(key)
-	t := []uint32{0, 0, 0, 0}
-	copy(t, iv)
-	ctr := uint32(0)
-	for i := 0; i < len(state); i += 4 {
-		iv[3] ^= ctr
-		ctr++
-		encryptAES(iv, expkey)
-		for j := 0; j < 4 && i+j < len(state); j++ {
-			state[i+j] ^= iv[j]
-		}
-		copy(iv, t)
-	}
-
-	unpack(b, state)
+	ctr(b, key, iv)
 }
 
 // EncryptAESCTR encrypts a plaintext with AES in CTR mode.
 // This code does not work for plaintexts longer than 2^32 blocks
 func EncryptAESCTR(b, key []byte) []uint32 {
-	state := make([]uint32, len(b)/4)
-	pack(b, state)
+	iv, ivcopy := []uint32{0, 0, 0, 0}, []uint32{0, 0, 0, 0}
+	r := make([]byte, 16)
+	_, err := rand.Read(r)
+	if err != nil {
+		return iv
+	}
+	pack(r, iv)
+	copy(ivcopy, iv)
 
+	ctr(b, key, iv)
+
+	return ivcopy
+}
+
+func ctr(b, key []byte, iv []uint32) {
 	expkey := keyExpansion(key)
 
-	rand.Seed(time.Now().UnixNano())
-	iv := []uint32{rand.Uint32(), rand.Uint32(), rand.Uint32(), rand.Uint32()}
-	t := []uint32{0, 0, 0, 0}
-	copy(t, iv)
+	ivcopy := []uint32{0, 0, 0, 0}
+	copy(ivcopy, iv)
+
+	ivbytes := make([]byte, bsize)
 	ctr := uint32(0)
-	for i := 0; i < len(state); i += 4 {
+
+	for i := 0; i < len(b); i += 16 {
 		iv[3] ^= ctr
 		ctr++
 		encryptAES(iv, expkey)
-		for j := 0; j < 4; j++ {
-			state[i+j] ^= iv[j]
-		}
-		copy(iv, t)
-	}
+		unpack(ivbytes, iv)
 
-	unpack(b, state)
-	return t
+		for j := 0; j < bsize && i+j < len(b); j++ {
+			b[i+j] ^= ivbytes[j]
+		}
+		copy(iv, ivcopy)
+	}
 }
