@@ -17,7 +17,7 @@ func EncryptAESCTR(b, key []byte) []uint32 {
 	if err != nil {
 		return iv
 	}
-	pack(r, iv)
+	pack(iv, r)
 	copy(ivcopy, iv)
 
 	ctr(b, key, iv)
@@ -34,7 +34,7 @@ func ctr(b, key []byte, iv []uint32) {
 	ivbytes := make([]byte, bsize)
 	ctr := uint32(0)
 
-	for i := 0; i < len(b); i += 16 {
+	for i := 0; i < len(b); i += bsize {
 		iv[3] ^= ctr
 		ctr++
 		encryptAES(iv, expkey)

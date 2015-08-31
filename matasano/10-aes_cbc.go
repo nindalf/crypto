@@ -6,7 +6,7 @@ import "crypto/rand"
 // This solves http://cryptopals.com/sets/2/challenges/10/
 func DecryptAESCBC(b, key []byte, iv []uint32) {
 	state := make([]uint32, len(b)/4)
-	pack(b, state)
+	pack(state, b)
 
 	expkey := keyExpansion(key)
 	t := []uint32{0, 0, 0, 0}
@@ -25,7 +25,7 @@ func DecryptAESCBC(b, key []byte, iv []uint32) {
 // EncryptAESCBC encrypts a plaintext with AES in CBC mode.
 func EncryptAESCBC(b, key []byte) []uint32 {
 	state := make([]uint32, len(b)/4)
-	pack(b, state)
+	pack(state, b)
 
 	expkey := keyExpansion(key)
 
@@ -35,7 +35,7 @@ func EncryptAESCBC(b, key []byte) []uint32 {
 	if err != nil {
 		return iv
 	}
-	pack(r, iv)
+	pack(iv, r)
 	copy(ivcopy, iv)
 
 	for i := 0; i < len(state); i += 4 {
