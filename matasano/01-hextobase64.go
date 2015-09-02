@@ -21,10 +21,11 @@ var hexvals = []byte("0123456789abcdef")
 // Base64FromHex converts a hex string to a base64 encoded string
 // This solves http://cryptopals.com/sets/1/challenges/1/
 func Base64FromHex(hex []byte) []byte {
-	return base64FromString(stringFromHex(hex))
+	return base64FromString(StringFromHex(hex))
 }
 
-func stringFromHex(hex []byte) []byte {
+// StringFromHex converts a hex encoded string to a byte-encoded one
+func StringFromHex(hex []byte) []byte {
 	convert := func(hex []byte) byte {
 		var sum int
 		sum += bytes.Index(hexvals, hex[0:1]) * 16
@@ -39,7 +40,7 @@ func stringFromHex(hex []byte) []byte {
 	return b.Bytes()
 }
 
-func hexFromString(str []byte) []byte {
+func HexFromString(str []byte) []byte {
 	convert := func(b byte) []byte {
 		out := make([]byte, 2)
 		out[1] = hexvals[b/16]

@@ -7,7 +7,7 @@ func FindXORLine(lines [][]byte) ([]byte, []byte, byte) {
 	var rkey byte
 	var currank float64
 	for _, l := range lines {
-		decrypted, rank, key := BreakSingleXor(stringFromHex(l))
+		decrypted, rank, key := BreakSingleXor(StringFromHex(l))
 		if currank < rank {
 			currank = rank
 			result = decrypted

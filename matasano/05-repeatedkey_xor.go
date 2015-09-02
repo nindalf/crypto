@@ -7,7 +7,7 @@ func EncryptRepeatedXor(plaintext, key []byte) []byte {
 		keybyte := key[i%len(key)]
 		plaintext[i] = plaintext[i] ^ keybyte
 	}
-	return hexFromString(plaintext)
+	return HexFromString(plaintext)
 }
 
 func decryptRepeatedXor(ciphertext, key []byte) []byte {

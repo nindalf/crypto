@@ -30,7 +30,7 @@ func TestDecodeBase64(t *testing.T) {
 func TestStringFromHex(t *testing.T) {
 	input := "49276d206b696c6c696e6720796f757220627261696e206c696b65206120706f69736f6e6f7573206d757368726f6f6d"
 	expected := "I'm killing your brain like a poisonous mushroom"
-	actual := string(stringFromHex([]byte(input)))
+	actual := string(StringFromHex([]byte(input)))
 	if expected != actual {
 		t.Fatalf("Input - %s\nExptected - %s\nActual - %s", input, expected, actual)
 	}
