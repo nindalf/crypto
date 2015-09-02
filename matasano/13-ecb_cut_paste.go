@@ -40,7 +40,7 @@ func CreateAdminProfile() []byte {
 
 func newRole(frontpad int) string {
 	role := []byte("admin")
-	role = padPKCS7(role, 16)
+	role = PadPKCS7(role, 16)
 	pad := make([]byte, frontpad)
 	pad = append(pad, role...)
 	return string(pad)
@@ -60,14 +60,14 @@ func profilefor(email string) string {
 
 func encryptProfile(profile string) []byte {
 	b := []byte(profile)
-	b = padPKCS7(b, 16)
+	b = PadPKCS7(b, 16)
 	EncryptAESECB(b, rkey)
 	return b
 }
 
 func decryptProfile(profile []byte) map[string]string {
 	DecryptAESECB(profile, rkey)
-	profile, _ = stripPKCS7(profile)
+	profile, _ = StripPKCS7(profile)
 	return kvdecoder(string(profile))
 }
 

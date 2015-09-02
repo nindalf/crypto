@@ -19,7 +19,7 @@ func encrypt16(input string) ([]byte, []uint32) {
 	input = strings.Replace(input, ";", "", -1)
 	input = strings.Replace(input, "=", "", -1)
 	b := []byte("comment1=cooking%20MCs;userdata=" + input + ";comment2=%20like%20a%20pound%20of%20bacon")
-	b = padPKCS7(b, 16)
+	b = PadPKCS7(b, 16)
 	iv := EncryptAESCBC(b, rkey)
 	return b, iv
 }

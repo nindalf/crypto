@@ -17,7 +17,7 @@ func oraclehard(b []byte) []byte {
 	r := randbytes(rand.Intn(40))
 	r = append(r, b...)
 	r = append(r, dec...)
-	r = padPKCS7(r, 16)
+	r = PadPKCS7(r, 16)
 	EncryptAESECB(r, rkey)
 	return r
 }
@@ -85,7 +85,7 @@ func genChosenCiphersHard() ([][]byte, []byte) {
 	for i := 15; i > 0; i-- {
 		bc := make([]byte, 1, 16)
 		bc = append(bc, guessed...)
-		bc = padPKCS7(bc, 16)
+		bc = PadPKCS7(bc, 16)
 		for j := 0; j < 256; j++ {
 			bc[0] = byte(j)
 			copy(temp, bc)

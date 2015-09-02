@@ -4,7 +4,7 @@ package matasano
 // If the padding isn't valid, the function panics
 // This solves http://cryptopals.com/sets/2/challenges/15
 func ValidatePKCS7(b []byte) {
-	_, err := stripPKCS7(b)
+	_, err := StripPKCS7(b)
 	if err != nil {
 		panic("Not valid padding")
 	}

@@ -13,7 +13,7 @@ func oracleeasy(b []byte) []byte {
 	dec := make([]byte, (3*len(plaintext))/4)
 	DecodeBase64(dec, plaintext)
 	b = append(b, dec...)
-	b = padPKCS7(b, 16)
+	b = PadPKCS7(b, 16)
 	EncryptAESECB(b, rkey)
 	return b
 }

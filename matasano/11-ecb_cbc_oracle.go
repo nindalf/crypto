@@ -63,7 +63,7 @@ func getPlaintext(b []byte) []byte {
 	p := make([]byte, len(prefix), len(b)+20)
 	copy(p, prefix)
 	p = append(p, b...)
-	p = padPKCS7(p, 16)
+	p = PadPKCS7(p, 16)
 	return p
 }
 

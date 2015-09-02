@@ -60,7 +60,7 @@ func encrypt17() ([]byte, []uint32) {
 	// s := plaintexts[rand.Intn(len(plaintexts))]
 	s := plaintexts[1]
 	b := []byte(s)
-	b = padPKCS7(b, 16)
+	b = PadPKCS7(b, 16)
 	iv := EncryptAESCBC(b, rkey)
 	return b, iv
 }
@@ -68,6 +68,6 @@ func encrypt17() ([]byte, []uint32) {
 // isPaddingValid decrypts the ciphertext and returns true if the padding is valid
 func isPaddingValid(b []byte, iv []uint32) bool {
 	DecryptAESCBC(b, rkey, iv)
-	_, err := stripPKCS7(b)
+	_, err := StripPKCS7(b)
 	return err == nil
 }

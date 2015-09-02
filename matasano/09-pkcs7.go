@@ -4,10 +4,10 @@ import "errors"
 
 var errPaddingMalformed = errors.New("PKCS7 malformed")
 
-// This pads an input array of bytes till it is a multiple of n bytes in length
+// PadPKCS7 pads an input array of bytes till it is a multiple of n bytes in length
 // Described more here - https://en.wikipedia.org/wiki/Padding_%28cryptography%29#PKCS7
 // This solves http://cryptopals.com/sets/2/challenges/9/
-func padPKCS7(input []byte, n int) []byte {
+func PadPKCS7(input []byte, n int) []byte {
 	np := n - (len(input) % n)
 	padding := byte(np) - byte(0)
 	for i := 0; i < np; i++ {
@@ -16,7 +16,8 @@ func padPKCS7(input []byte, n int) []byte {
 	return input
 }
 
-func stripPKCS7(input []byte) ([]byte, error) {
+// StripPKCS7 removes the PKCS7 padding from a slice of bytes
+func StripPKCS7(input []byte) ([]byte, error) {
 	l := len(input) - 1
 	n := int(input[l])
 	if n < 1 {

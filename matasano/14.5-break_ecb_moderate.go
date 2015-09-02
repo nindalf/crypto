@@ -17,7 +17,7 @@ func oraclemoderate(b []byte) []byte {
 	r := randbytes(numBytes)
 	r = append(r, b...)
 	r = append(r, dec...)
-	r = padPKCS7(r, 16)
+	r = PadPKCS7(r, 16)
 	EncryptAESECB(r, rkey)
 	return r
 }
