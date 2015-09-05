@@ -1,4 +1,4 @@
-package matasano
+package aes
 
 import (
 	"math/rand"

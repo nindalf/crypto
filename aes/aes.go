@@ -1,6 +1,8 @@
-package matasano
+package aes
 
-func decryptAES(state, expkey []uint32) {
+// DecryptAES decrypts the ciphertext in the state []uint32
+// under the expanded key expkey
+func DecryptAES(state, expkey []uint32) {
 	keyi := len(expkey) - 4
 	addRoundKey(state, expkey[keyi:keyi+4])
 	keyi -= 4
@@ -17,7 +19,9 @@ func decryptAES(state, expkey []uint32) {
 	addRoundKey(state, expkey[keyi:keyi+4])
 }
 
-func encryptAES(state, expkey []uint32) {
+// EncryptAES encrypts the plaintext in the state []uint32
+// under the expanded key expkey
+func EncryptAES(state, expkey []uint32) {
 	keyi := 0
 	addRoundKey(state, expkey[keyi:keyi+4])
 	keyi += 4
@@ -117,14 +121,12 @@ func manipulateColumns(state []uint32, calc func(byte, byte, byte, byte) (byte, 
 	}
 }
 
-// based on https://en.wikipedia.org/wiki/Rijndael_key_schedule
+// KeyExpansion is based on https://en.wikipedia.org/wiki/Rijndael_key_schedule
 // I've tried to optimise for readability. For now it only supports expansion for 128-bit keys
-
 // nwords - number of words. Values are 4, 6, 8 for 128, 192 and 256-bit
 // rounds - number of rounds. Values are 10, 12, 14 for 128, 192 and 256-bit
 // each round requires a 4 word key. So we need 4(10+1), 4(12+1) and 4(14+1) words in the expanded key
-
-func keyExpansion(key []byte) []uint32 {
+func KeyExpansion(key []byte) []uint32 {
 	nwords := 4
 	rounds := 10
 

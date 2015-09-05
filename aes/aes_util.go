@@ -1,6 +1,6 @@
-package matasano
+package aes
 
-// pack moves bytes from src (bytes) to dst (state)
+// Pack moves bytes from src (bytes) to dst (state)
 // It is assumed that len(src) % 4 == 0
 // aes.go accepts AES input in the form of []uint32, where each AES block is 4 consecutive uint32s
 // 4 uint32s correspond to 16 bytes in this manner:
@@ -8,7 +8,7 @@ package matasano
 // dst[1] = 1  5  9   13
 // dst[2] = 2  6  10  14
 // dst[3] = 3  7  11  15
-func pack(dst []uint32, src []byte) {
+func Pack(dst []uint32, src []byte) {
 	for i := 0; i < len(dst); i += 4 {
 		for j := 0; j < 4; j++ {
 			dst[i+j] = uint32(src[i*4+j])<<24 | uint32(src[(i+1)*4+j])<<16 | uint32(src[(i+2)*4+j])<<8 | uint32(src[(i+3)*4+j])
@@ -16,9 +16,9 @@ func pack(dst []uint32, src []byte) {
 	}
 }
 
-// unpack moves bytes from src (state) to dst (bytes)
+// Unpack moves bytes from src (state) to dst (bytes)
 // It is assumed that len(dst) % 4 == 0
-func unpack(dst []byte, src []uint32) {
+func Unpack(dst []byte, src []uint32) {
 	for i := 0; i < len(src); i += 4 {
 		for j := 0; j < 4; j++ {
 			dst[(i+0)*4+j] = byte(src[i+j] >> 24)

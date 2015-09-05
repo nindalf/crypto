@@ -1,6 +1,10 @@
 package matasano
 
-import "crypto/rand"
+import (
+	"crypto/rand"
+
+	"github.com/nindalf/crypto/aes"
+)
 
 // DecryptAESCTR decrypts a ciphertext encrypted with AES in CTR mode.
 func DecryptAESCTR(b, key []byte, iv []uint32) {
@@ -16,7 +20,7 @@ func EncryptAESCTR(b, key []byte) []uint32 {
 	}
 
 	iv, ivcopy := []uint32{0, 0, 0, 0}, []uint32{0, 0, 0, 0}
-	pack(iv, r)
+	aes.Pack(iv, r)
 	copy(ivcopy, iv)
 
 	ctr(b, key, iv)
@@ -25,7 +29,7 @@ func EncryptAESCTR(b, key []byte) []uint32 {
 }
 
 func ctr(b, key []byte, iv []uint32) {
-	expkey := keyExpansion(key)
+	expkey := aes.KeyExpansion(key)
 
 	ivbytes := make([]byte, bsize)
 	ctr := fromUint32(iv)
@@ -34,8 +38,8 @@ func ctr(b, key []byte, iv []uint32) {
 		ctr.ToUint32(iv)
 		ctr.Add(1)
 
-		encryptAES(iv, expkey)
-		unpack(ivbytes, iv)
+		aes.EncryptAES(iv, expkey)
+		aes.Unpack(ivbytes, iv)
 
 		for j := 0; j < bsize && i+j < len(b); j++ {
 			b[i+j] ^= ivbytes[j]

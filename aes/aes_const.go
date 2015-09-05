@@ -1,4 +1,4 @@
-package matasano
+package aes
 
 // Powers of x mod poly in GF(2).
 var powx = [16]byte{
