@@ -1,6 +1,12 @@
-Crypto challenge solutions
+Crypto code and notes
 ---
 
-These are the solutions to the problems on [cryptopals.com](http://cryptopals.com), written in Go. Its currently a work in progress. I strongly recommend that no one read the solutions if they plan to attempt the problems themselves because that would spoil the fun.
+I keep all the code and notes related to cryptography in this repo. They're classified under
 
-For an introduction to the problem set, check out [this article](https://blog.pinboard.in/2013/04/the_matasano_crypto_challenges/).
+* stanford - The notes for the Coursera [course on cryptography](https://class.coursera.org/crypto-015).
+* matasano - The code for the [Matasano crypto challenges](http://cryptopals.com).
+
+If you're interested in crypto, I'd recommend checking both out.
+
+The code for the challenges are WIP, I have finished 16 out of 56 problems in total. In case you'd like to learn more about them, here's a [good intro](https://blog.pinboard.in/2013/04/the_matasano_crypto_challenges/).
+
