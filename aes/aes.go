@@ -1,8 +1,44 @@
 package aes
 
-// DecryptAES decrypts the ciphertext in the state []uint32
+import "crypto/cipher"
+
+const (
+	// BlockSize is the size of each AES block
+	BlockSize = 16
+)
+
+// cipherAES is a block cipher that implements the Advances Encryption Standard (AES)
+type cipherAES struct {
+	expkey []uint32
+}
+
+// NewCipher creates a cipherAES object
+func NewCipher(key []byte) cipher.Block {
+	expkey := keyExpansion(key)
+	return cipherAES{expkey}
+}
+
+func (a cipherAES) Encrypt(dst, src []byte) {
+	state := make([]uint32, 4)
+	pack(state, src[0:BlockSize])
+	encrypt(state, a.expkey)
+	unpack(dst[0:BlockSize], state)
+}
+
+func (a cipherAES) Decrypt(dst, src []byte) {
+	state := make([]uint32, 4)
+	pack(state, src[0:BlockSize])
+	decrypt(state, a.expkey)
+	unpack(dst[0:BlockSize], state)
+}
+
+func (a cipherAES) BlockSize() int {
+	return BlockSize
+}
+
+// decrypt decrypts the ciphertext in the state []uint32
 // under the expanded key expkey
-func DecryptAES(state, expkey []uint32) {
+func decrypt(state, expkey []uint32) {
 	keyi := len(expkey) - 4
 	addRoundKey(state, expkey[keyi:keyi+4])
 	keyi -= 4
@@ -19,9 +55,9 @@ func DecryptAES(state, expkey []uint32) {
 	addRoundKey(state, expkey[keyi:keyi+4])
 }
 
-// EncryptAES encrypts the plaintext in the state []uint32
+// encrypt encrypts the plaintext in the state []uint32
 // under the expanded key expkey
-func EncryptAES(state, expkey []uint32) {
+func encrypt(state, expkey []uint32) {
 	keyi := 0
 	addRoundKey(state, expkey[keyi:keyi+4])
 	keyi += 4
@@ -126,7 +162,7 @@ func manipulateColumns(state []uint32, calc func(byte, byte, byte, byte) (byte, 
 // nwords - number of words. Values are 4, 6, 8 for 128, 192 and 256-bit
 // rounds - number of rounds. Values are 10, 12, 14 for 128, 192 and 256-bit
 // each round requires a 4 word key. So we need 4(10+1), 4(12+1) and 4(14+1) words in the expanded key
-func KeyExpansion(key []byte) []uint32 {
+func keyExpansion(key []byte) []uint32 {
 	nwords := 4
 	rounds := 10
 

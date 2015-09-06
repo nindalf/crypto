@@ -1,9 +1,8 @@
 package aes
 
 import (
-	"math/rand"
+	"crypto/rand"
 	"testing"
-	"time"
 )
 
 func TestKeyExpansion(t *testing.T) {
@@ -27,10 +26,10 @@ func TestEncryptDecrypt(t *testing.T) {
 	key := "PURPLE SIDEKICKS"
 	expkey := keyExpansion([]byte(key))
 	enc := func(state []uint32) {
-		encryptAES(state, expkey)
+		encrypt(state, expkey)
 	}
 	dec := func(state []uint32) {
-		decryptAES(state, expkey)
+		decrypt(state, expkey)
 	}
 	testForwardAndInverse(t, enc, dec, "Encrypt")
 }
@@ -105,13 +104,13 @@ func testOperation(t *testing.T, operation func([]uint32), input, expected []uin
 }
 
 func testForwardAndInverse(t *testing.T, forward, inverse func([]uint32), name string) {
-	rand.Seed(time.Now().UnixNano())
 	input, expected := make([]uint32, 4), make([]uint32, 4)
+	b := make([]byte, 16)
 	for i := 0; i < 10; i++ {
-		for j := range input {
-			n := rand.Uint32()
-			input[j], expected[j] = n, n
-		}
+		rand.Read(b)
+		pack(input, b)
+		pack(expected, b)
+
 		forward(input)
 		inverse(input)
 		for j := range input {
