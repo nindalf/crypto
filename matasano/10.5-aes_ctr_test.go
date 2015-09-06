@@ -1,6 +1,7 @@
 package matasano
 
 import (
+	"bytes"
 	"crypto/rand"
 	"testing"
 
@@ -44,5 +45,18 @@ func TestCTRDecrypt(t *testing.T) {
 
 	if string(c) != expected {
 		t.Fatalf("Failed to decrypt in CTR mode. Expected - %s\tFound - %s", expected, string(c))
+	}
+}
+
+func TestUint128(t *testing.T) {
+	input, parsed := make([]byte, 16), make([]byte, 16)
+	rand.Read(input)
+
+	integer := fromBytes(input)
+	integer.Add(1)
+	integer.ToBytes(parsed)
+
+	if !bytes.Equal(input[0:14], parsed[0:14]) || input[15]+1 != parsed[15] {
+		t.Fatalf("Uint128 failed to parse bytes and return them correctly. Input - %x\tParsed %x", input, parsed)
 	}
 }
