@@ -31,10 +31,10 @@ Decryption involves the inverse of these steps, in reverse order
 3. inverse-substituting bytes - `invSubBytes()`
 4. applying a key - `addRoundKey()`
 
-Have a look at the `encryptAES` function below, implemented in Go (Go has a C-like syntax)
+Have a look at the `encrypt` function below, implemented in Go (Go has a C-like syntax)
 
 ```
-func encryptAES(state, expkey []uint32, rounds int) {
+func encrypt(state, expkey []uint32, rounds int) {
 	keyi := 0
 	addRoundKey(state, expkey[keyi:keyi+4])
 	keyi += 4
@@ -225,9 +225,9 @@ If you haven't yet managed it, you could check out the [FIPS-197 Document](http:
 
 You can find my implementation here:
 
-* [aes.go](https://github.com/nindalf/crypto/blob/master/matasano/aes.go) - `EncryptAES()`, `DecryptAES()` and all helper functions.
-* [aes_test.go](https://github.com/nindalf/crypto/blob/master/matasano/aes_test.go) - test vectors for each step.
-* [aes_const.go](https://github.com/nindalf/crypto/blob/master/matasano/aes_const.go) - S-boxes and the Galois-field multiplication lookup tables.
+* [aes.go](https://github.com/nindalf/crypto/blob/master/aes/aes.go) - `encrypt()`, `decrypt()` and all helper functions.
+* [aes_test.go](https://github.com/nindalf/crypto/blob/master/aes/aes_test.go) - test vectors for each step.
+* [const.go](https://github.com/nindalf/crypto/blob/master/aes/const.go) - S-boxes and the Galois-field multiplication lookup tables.
 
 The caveats mentioned in the foot-shooting-prevention agreement apply to my code as well. The linked code is useful for learning about AES, but is not secure and should not be used to encrypt anything important.
 
