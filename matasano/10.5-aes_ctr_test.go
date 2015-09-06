@@ -1,6 +1,7 @@
 package matasano
 
 import (
+	"crypto/rand"
 	"testing"
 
 	"github.com/nindalf/crypto/aes"
@@ -18,15 +19,17 @@ func TestCTREncryptDecrypt(t *testing.T) {
 func testCTR(t *testing.T, input string) {
 	b := []byte(input)
 	key := []byte("YELLOW SUBMARINE")
+	iv := make([]byte, aes.BlockSize)
+	rand.Read(iv)
 
-	iv := EncryptAESCTR(b, key)
+	EncryptAESCTR(b, key, iv)
 	if string(b) == input {
 		t.Fatalf("Failed to encrypt - %s", input)
 	}
 
 	DecryptAESCTR(b, key, iv)
 	if string(b) != input {
-		t.Fatalf("Failed to decrypt - %s", input)
+		t.Fatalf("Failed to decrypt - %s, %s", input, string(b))
 	}
 }
 
@@ -35,9 +38,7 @@ func TestCTRDecrypt(t *testing.T) {
 	expected := "Always avoid the random gibberish while decrypting"
 
 	key := []byte{0x36, 0xf1, 0x83, 0x57, 0xbe, 0x4d, 0xbd, 0x77, 0xf0, 0x50, 0x51, 0x5c, 0x73, 0xfc, 0xf9, 0xf2}
-	ivbytes := []byte{0x77, 0xb, 0x80, 0x25, 0x9e, 0xc3, 0x3b, 0xeb, 0x25, 0x61, 0x35, 0x8a, 0x9f, 0x2d, 0xc6, 0x17}
-	iv := make([]uint32, 4)
-	aes.Pack(iv, ivbytes)
+	iv := []byte{0x77, 0xb, 0x80, 0x25, 0x9e, 0xc3, 0x3b, 0xeb, 0x25, 0x61, 0x35, 0x8a, 0x9f, 0x2d, 0xc6, 0x17}
 
 	DecryptAESCTR(c, key, iv)
 

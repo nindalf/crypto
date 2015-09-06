@@ -1,5 +1,7 @@
 package matasano
 
+import "crypto/aes"
+
 // DetectAESECB detects which line is likely to be encoded by AES in ECB mode
 // This solves http://cryptopals.com/sets/1/challenges/8/
 func DetectAESECB(lines []string) string {
@@ -17,8 +19,8 @@ func DetectAESECB(lines []string) string {
 func similarBlocks(line string) int {
 	var score int
 	blocks := make(map[string]int)
-	for i := 0; i < len(line); i += 16 {
-		cur := line[i : i+16]
+	for i := 0; i < len(line); i += aes.BlockSize {
+		cur := line[i : i+aes.BlockSize]
 		blocks[cur] = blocks[cur] + 1
 	}
 	for _, v := range blocks {

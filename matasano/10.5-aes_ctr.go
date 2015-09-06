@@ -1,48 +1,32 @@
 package matasano
 
-import (
-	"crypto/rand"
-
-	"github.com/nindalf/crypto/aes"
-)
+import "github.com/nindalf/crypto/aes"
 
 // DecryptAESCTR decrypts a ciphertext encrypted with AES in CTR mode.
-func DecryptAESCTR(b, key []byte, iv []uint32) {
+func DecryptAESCTR(b, key, iv []byte) {
 	ctr(b, key, iv)
 }
 
 // EncryptAESCTR encrypts a plaintext with AES in CTR mode.
-func EncryptAESCTR(b, key []byte) []uint32 {
-	r := make([]byte, 16)
-	_, err := rand.Read(r)
-	if err != nil {
-		return []uint32{}
-	}
-
-	iv, ivcopy := []uint32{0, 0, 0, 0}, []uint32{0, 0, 0, 0}
-	aes.Pack(iv, r)
-	copy(ivcopy, iv)
-
+func EncryptAESCTR(b, key, iv []byte) {
 	ctr(b, key, iv)
-
-	return ivcopy
 }
 
-func ctr(b, key []byte, iv []uint32) {
-	expkey := aes.KeyExpansion(key)
+func ctr(b, key, ivc []byte) {
+	aesc := aes.NewCipher(key)
 
-	ivbytes := make([]byte, bsize)
-	ctr := fromUint32(iv)
+	iv := make([]byte, len(ivc))
+	copy(iv, ivc)
+	ctr := fromBytes(iv)
 
-	for i := 0; i < len(b); i += bsize {
-		ctr.ToUint32(iv)
+	for i := 0; i < len(b); i += aes.BlockSize {
+		ctr.ToBytes(iv)
 		ctr.Add(1)
 
-		aes.EncryptAES(iv, expkey)
-		aes.Unpack(ivbytes, iv)
+		aesc.Encrypt(iv, iv)
 
-		for j := 0; j < bsize && i+j < len(b); j++ {
-			b[i+j] ^= ivbytes[j]
+		for j := 0; j < aes.BlockSize && i+j < len(b); j++ {
+			b[i+j] ^= iv[j]
 		}
 	}
 }
@@ -62,17 +46,20 @@ func (u *uint128) Add(a uint64) {
 	u.low = u.low + a
 }
 
-// ToUint32 assigns the value of the uint128 to the []uint32 passed as a parameter
-func (u uint128) ToUint32(result []uint32) {
-	result[0] = uint32(u.high >> 32)
-	result[1] = uint32(u.high)
-	result[2] = uint32(u.low >> 32)
-	result[3] = uint32(u.low)
+// ToBytes copies the value of the uint128 u to the first 16 bytes of result
+func (u uint128) ToBytes(result []byte) {
+	for i := uint64(0); i < 8; i++ {
+		result[i] = byte(u.high >> (8 * (7 - i)))
+		result[i+8] = byte(u.low >> (8 * (7 - i)))
+	}
 }
 
-// fromUint32 creates a uint128 from 4 uint32s
-func fromUint32(in []uint32) uint128 {
-	high := uint64(in[0])<<32 | uint64(in[1])
-	low := uint64(in[2])<<32 | uint64(in[3])
+// fromBytes creates a uint128 from the input []byte of length 16
+func fromBytes(in []byte) uint128 {
+	high, low := uint64(0), uint64(0)
+	for i := uint64(0); i < 8; i++ {
+		high |= uint64(in[i]) << (8 * (7 - i))
+		low |= uint64(in[i+8]) << (8 * (7 - i))
+	}
 	return uint128{high, low}
 }

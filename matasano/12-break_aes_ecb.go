@@ -1,8 +1,10 @@
 package matasano
 
-import "bytes"
+import (
+	"bytes"
 
-const bsize = 16
+	"github.com/nindalf/crypto/aes"
+)
 
 // Used when a random key needs to be used repeatedly
 var rkey = randbytes(16)
@@ -13,7 +15,7 @@ func oracleeasy(b []byte) []byte {
 	dec := make([]byte, (3*len(plaintext))/4)
 	DecodeBase64(dec, plaintext)
 	b = append(b, dec...)
-	b = PadPKCS7(b, 16)
+	b = PadPKCS7(b, aes.BlockSize)
 	EncryptAESECB(b, rkey)
 	return b
 }
@@ -24,8 +26,8 @@ func oracleeasy(b []byte) []byte {
 func BreakECBEasy() []byte {
 	chosens := genChosenCiphersEasy()
 	var decrypted bytes.Buffer
-	previous := make([]byte, bsize, len(chosens[0]))
-	for i := 0; i < len(chosens[0]); i += bsize {
+	previous := make([]byte, aes.BlockSize, len(chosens[0]))
+	for i := 0; i < len(chosens[0]); i += aes.BlockSize {
 		previous = decrypt16bytesEasy(chosens, previous, i)
 		decrypted.Write(previous)
 	}
@@ -33,10 +35,10 @@ func BreakECBEasy() []byte {
 }
 
 func decrypt16bytesEasy(chosens [][]byte, previous []byte, index int) []byte {
-	decrypted := make([]byte, 0, bsize)
+	decrypted := make([]byte, 0, aes.BlockSize)
 	for i := len(chosens) - 1; i >= 0; i-- {
 		previous = previous[1:len(previous)]
-		dec := decryptbyteEasy(chosens[i][index:index+bsize], previous)
+		dec := decryptbyteEasy(chosens[i][index:index+aes.BlockSize], previous)
 		previous = append(previous, dec)
 		decrypted = append(decrypted, dec)
 	}
@@ -46,8 +48,8 @@ func decrypt16bytesEasy(chosens [][]byte, previous []byte, index int) []byte {
 func decryptbyteEasy(chosen, previous []byte) byte {
 	previous = append(previous, byte(0))
 	for i := 0; i < 255; i++ {
-		previous[bsize-1] = byte(i)
-		if bytes.Equal(oracleeasy(previous)[0:bsize], chosen) {
+		previous[aes.BlockSize-1] = byte(i)
+		if bytes.Equal(oracleeasy(previous)[0:aes.BlockSize], chosen) {
 			return byte(i)
 		}
 	}
@@ -55,11 +57,11 @@ func decryptbyteEasy(chosen, previous []byte) byte {
 }
 
 func genChosenCiphersEasy() [][]byte {
-	chosens := make([][]byte, 0, bsize)
-	prefix := make([]byte, 0, bsize-1)
+	chosens := make([][]byte, 0, aes.BlockSize)
+	prefix := make([]byte, 0, aes.BlockSize-1)
 	chosens = append(chosens, oracleeasy(prefix))
 	var x byte
-	for i := 0; i < bsize-1; i++ {
+	for i := 0; i < aes.BlockSize-1; i++ {
 		prefix = append(prefix, x)
 		chosens = append(chosens, oracleeasy(prefix))
 	}

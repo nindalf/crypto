@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+
+	"github.com/nindalf/crypto/aes"
 )
 
 //  a function that produces: AES-128-ECB(random-text-of-random-length || b || unknown-string, random-key)
@@ -28,7 +30,7 @@ func oraclehard(b []byte) []byte {
 func BreakECBHard() []byte {
 	chosens, previous := genChosenCiphersHard()
 	var decrypted bytes.Buffer
-	for i := 0; i < 160; i += bsize {
+	for i := 0; i < 160; i += aes.BlockSize {
 		previous = decrypt16bytesHard(chosens, previous, i)
 		fmt.Println(string(previous))
 		decrypted.Write(previous) // reverse
@@ -37,8 +39,8 @@ func BreakECBHard() []byte {
 }
 
 func decrypt16bytesHard(chosens [][]byte, previous []byte, index int) []byte {
-	decrypted := make([]byte, bsize)
-	for i := bsize - 1; i >= 0; i-- {
+	decrypted := make([]byte, aes.BlockSize)
+	for i := aes.BlockSize - 1; i >= 0; i-- {
 		previous = previous[0 : len(previous)-1]
 		l := len(chosens[i])
 		dec := decryptbyteHard(chosens[i][l-index-32:l-index-16], previous)
@@ -51,7 +53,7 @@ func decrypt16bytesHard(chosens [][]byte, previous []byte, index int) []byte {
 
 func decryptbyteHard(chosen, previous []byte) byte {
 	previous = append([]byte{0}, previous...)
-	temp := make([]byte, bsize)
+	temp := make([]byte, aes.BlockSize)
 	for i := 0; i < 255; i++ {
 		copy(temp, previous)
 		temp[0] = byte(i)
@@ -65,11 +67,11 @@ func decryptbyteHard(chosen, previous []byte) byte {
 
 // generates chosen ciphertexts and the last decrypted block
 func genChosenCiphersHard() ([][]byte, []byte) {
-	chosens := make([][]byte, 0, bsize)
+	chosens := make([][]byte, 0, aes.BlockSize)
 	existing := make(map[string]int)
 	chosen := make([]byte, 48)
 	var i int
-	for len(chosens) != bsize {
+	for len(chosens) != aes.BlockSize {
 		b := oraclehard(chosen)
 		lastblock := string(b[len(b)-16 : len(b)])
 		if _, ok := existing[lastblock]; ok == false {
@@ -79,7 +81,7 @@ func genChosenCiphersHard() ([][]byte, []byte) {
 			i++
 		}
 	}
-	orderedChosens := make([][]byte, bsize)
+	orderedChosens := make([][]byte, aes.BlockSize)
 	guessed, temp := make([]byte, 0, 16), make([]byte, 16)
 	var err error
 	for i := 15; i > 0; i-- {

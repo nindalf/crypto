@@ -1,6 +1,8 @@
 package matasano
 
 import (
+	"crypto/aes"
+	crand "crypto/rand"
 	"math/rand"
 	"time"
 )
@@ -42,6 +44,8 @@ func generateCiphertexts(b []byte) ([][]byte, []int) {
 
 	ciphers := make([][]byte, 10)
 	coinflips := make([]int, 10)
+	iv := make([]byte, aes.BlockSize)
+
 	for i := range ciphers {
 		p := getPlaintext(b)
 		key := randbytes(16)
@@ -49,7 +53,8 @@ func generateCiphertexts(b []byte) ([][]byte, []int) {
 		if coin == 1 {
 			EncryptAESECB(p, key)
 		} else {
-			EncryptAESCBC(p, key)
+			crand.Read(iv)
+			EncryptAESCBC(p, key, iv)
 		}
 		ciphers[i] = p
 		coinflips[i] = coin
@@ -63,13 +68,20 @@ func getPlaintext(b []byte) []byte {
 	p := make([]byte, len(prefix), len(b)+20)
 	copy(p, prefix)
 	p = append(p, b...)
-	p = PadPKCS7(p, 16)
+	p = PadPKCS7(p, aes.BlockSize)
 	return p
+}
+
+func randbytes(n int) []byte {
+	b := make([]byte, n)
+	crand.Read(b)
+	return b
 }
 
 // randbytes generates an byte slice of length n, filled with random bytes
 // n should be greater than 3
-func randbytes(n int) []byte {
+// This function is deprecated, replaced with a function that uses crypto/rand instead of math/rand
+func randbytesDeprecated(n int) []byte {
 	pad := n - (n % 4)
 	b := make([]byte, n+pad)
 	if n < 4 {
