@@ -8,13 +8,15 @@ func DecryptAESCBC(b, key, iv []byte) {
 	aesc := aes.NewCipher(key)
 
 	t := make([]byte, aes.BlockSize)
+	ivc := make([]byte, aes.BlockSize)
+	copy(ivc, iv)
 	for i := 0; i < len(b); i += aes.BlockSize {
 		copy(t, b[i:i+aes.BlockSize])
 		aesc.Decrypt(b[i:i+aes.BlockSize], b[i:i+aes.BlockSize])
 		for j := range b[i : i+aes.BlockSize] {
-			b[i+j] ^= iv[j]
+			b[i+j] ^= ivc[j]
 		}
-		copy(iv, t)
+		copy(ivc, t)
 	}
 }
 

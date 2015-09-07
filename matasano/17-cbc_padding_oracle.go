@@ -3,11 +3,9 @@ package matasano
 import (
 	"bytes"
 	"fmt"
-	"math/rand"
-	"time"
 )
 
-var plaintexts = []string{
+var plaintexts17 = []string{
 	"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
 	"MDAwMDAxV2l0aCB0aGUgYmFzcyBraWNrZWQgaW4gYW5kIHRoZSBWZWdhJ3MgYXJlIHB1bXBpbic=",
 	"MDAwMDAyUXVpY2sgdG8gdGhlIHBvaW50LCB0byB0aGUgcG9pbnQsIG5vIGZha2luZw==",
@@ -20,54 +18,63 @@ var plaintexts = []string{
 	"MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"}
 
 // CBCPaddingOracle just chills out
-func CBCPaddingOracle(b []byte, iv []uint32) []byte {
+func CBCPaddingOracle(b, iv []byte) []byte {
 	var decrypted bytes.Buffer
-	for i := 16; i < len(b); i += 16 {
-		dec := decryptCBCBlock(b[0:i+16], iv)
+	t := make([]byte, 16)
+
+	for len(b) > 0 {
+		copy(t, b[0:16])
+		dec := breakCBCBlock(b[0:16], iv, len(b) == 16)
+		copy(iv, t)
+		b = b[16:len(b)]
 		decrypted.Write(dec)
 	}
 	return decrypted.Bytes()
 }
 
-// decrypts the last 16 bytes of block b using calls to the padding oracle
-func decryptCBCBlock(b []byte, iv []uint32) []byte {
-	p, c := make([]byte, 16), make([]byte, len(b))
+// decrypts the first 16 bytes of block b using calls to the padding oracle
+func breakCBCBlock(b, iv []byte, lastblock bool) []byte {
+	p := make([]byte, 16)
+	ivc := make([]byte, 16)
 	for i := 15; i >= 0; i-- {
-		copy(c, b)
+		copy(ivc, iv)
 		paddingbyte := byte(16 - i)
-		// fmt.Println(len(c)-32+i, paddingbyte, c[len(c)-32:len(c)])
-		for j := 1; j < 16-i; j++ {
-			c[len(c)-j-16] = c[len(c)-j-16] ^ p[16-j] ^ paddingbyte
+
+		for j := 15; j > i; j-- {
+			ivc[j] ^= p[j] ^ paddingbyte
 		}
-		// fmt.Println(len(c)-32+i, paddingbyte, c[len(c)-32:len(c)])
-		// fmt.Println("---")
+
+		temp := iv[i]
 		for k := 0; k < 256; k++ {
-			c[len(c)-32+i] = c[len(c)-32+i] ^ byte(k) ^ paddingbyte
-			if isPaddingValid(c, iv) {
-				fmt.Println(c)
+			if lastblock && i == 15 && k == 1 {
+				continue
+			}
+			ivc[i] = temp ^ byte(k) ^ paddingbyte
+			if isPaddingValid(b, ivc) {
 				p[i] = byte(k)
 				break
+			}
+			if k == 255 {
+				fmt.Println("failure")
 			}
 		}
 	}
 	return p
 }
 
-// 15 14 13
-
-func encrypt17() ([]byte, []uint32) {
-	rand.Seed(time.Now().UnixNano())
-	// s := plaintexts[rand.Intn(len(plaintexts))]
-	s := plaintexts[1]
+func encrypt17(s string) ([]byte, []byte) {
 	b := []byte(s)
 	b = PadPKCS7(b, 16)
-	iv := EncryptAESCBC(b, rkey)
+	iv := randbytes(16)
+	EncryptAESCBC(b, rkey, iv)
 	return b, iv
 }
 
 // isPaddingValid decrypts the ciphertext and returns true if the padding is valid
-func isPaddingValid(b []byte, iv []uint32) bool {
-	DecryptAESCBC(b, rkey, iv)
-	_, err := StripPKCS7(b)
+func isPaddingValid(b, iv []byte) bool {
+	c := make([]byte, 16)
+	copy(c, b)
+	DecryptAESCBC(c, rkey, iv)
+	_, err := StripPKCS7(c)
 	return err == nil
 }
