@@ -51,7 +51,7 @@ func generateCiphertexts(b []byte) ([][]byte, []int) {
 		key := randbytes(16)
 		coin := rand.Intn(2)
 		if coin == 1 {
-			EncryptAESECB(p, key)
+			ecbEnc.CryptBlocks(p, p)
 		} else {
 			crand.Read(iv)
 			EncryptAESCBC(p, key, iv)

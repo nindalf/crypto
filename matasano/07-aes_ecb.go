@@ -8,20 +8,46 @@ import (
 	"github.com/nindalf/crypto/aes"
 )
 
-// DecryptAESECB decrypts a ciphertext encrypted with AES in ECB mode.
+// Used when a random key needs to be used repeatedly
+var rkey = randbytes(16)
+var aesBlockCipher = aes.NewCipher(rkey)
+var ecbDec = newECBDecrypter(aesBlockCipher)
+var ecbEnc = newECBEncrypter(aesBlockCipher)
+
+type ecb struct {
+	cipher.Block // the block cipher
+}
+
+// ecbDecrypter decrypts a ciphertext encrypted with AES in ECB mode.
 // This solves http://cryptopals.com/sets/1/challenges/7/
-func DecryptAESECB(b, key []byte) {
-	aesc := aes.NewCipher(key)
-	for i := 0; i < len(b); i += aes.BlockSize {
-		aesc.Decrypt(b[i:i+aes.BlockSize], b[i:i+aes.BlockSize])
+type ecbDecrypter ecb
+
+func newECBDecrypter(b cipher.Block) cipher.BlockMode {
+	e := &ecb{b}
+	return (*ecbDecrypter)(e)
+}
+
+func (e *ecbDecrypter) CryptBlocks(dst, src []byte) {
+	for len(src) > 0 && len(dst) > 0 {
+		e.Decrypt(dst[0:aes.BlockSize], src[0:aes.BlockSize])
+		src = src[aes.BlockSize:len(src)]
+		dst = dst[aes.BlockSize:len(dst)]
 	}
 }
 
-// EncryptAESECB encrypts a plaintext with AES in ECB mode.
-func EncryptAESECB(b, key []byte) {
-	aesc := aes.NewCipher(key)
-	for i := 0; i < len(b); i += aes.BlockSize {
-		aesc.Encrypt(b[i:i+aes.BlockSize], b[i:i+aes.BlockSize])
+// ecbEncrypter encrypts a plaintext with AES in ECB mode.
+type ecbEncrypter ecb
+
+func newECBEncrypter(b cipher.Block) cipher.BlockMode {
+	e := &ecb{b}
+	return (*ecbEncrypter)(e)
+}
+
+func (e *ecbEncrypter) CryptBlocks(dst, src []byte) {
+	for len(src) > 0 && len(dst) > 0 {
+		e.Encrypt(dst[0:aes.BlockSize], src[0:aes.BlockSize])
+		src = src[aes.BlockSize:len(src)]
+		dst = dst[aes.BlockSize:len(dst)]
 	}
 }
 
@@ -42,8 +68,9 @@ func EncryptAESECBParallel(b, key []byte) {
 }
 
 func encryptECBblocks(b []byte, aesc cipher.Block, wg *sync.WaitGroup) {
-	for i := 0; i < len(b); i += aes.BlockSize {
-		aesc.Encrypt(b[i:i+aes.BlockSize], b[i:i+aes.BlockSize])
+	for len(b) > 0 {
+		aesc.Decrypt(b[0:aes.BlockSize], b[0:aes.BlockSize])
+		b = b[aes.BlockSize:len(b)]
 	}
 	wg.Done()
 }

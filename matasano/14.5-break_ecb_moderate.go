@@ -18,7 +18,7 @@ func oraclemoderate(b []byte) []byte {
 	r = append(r, b...)
 	r = append(r, dec...)
 	r = PadPKCS7(r, aes.BlockSize)
-	EncryptAESECB(r, rkey)
+	ecbEnc.CryptBlocks(r, r)
 	return r
 }
 

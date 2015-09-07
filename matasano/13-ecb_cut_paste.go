@@ -61,12 +61,12 @@ func profilefor(email string) string {
 func encryptProfile(profile string) []byte {
 	b := []byte(profile)
 	b = PadPKCS7(b, 16)
-	EncryptAESECB(b, rkey)
+	ecbEnc.CryptBlocks(b, b)
 	return b
 }
 
 func decryptProfile(profile []byte) map[string]string {
-	DecryptAESECB(profile, rkey)
+	ecbDec.CryptBlocks(profile, profile)
 	profile, _ = StripPKCS7(profile)
 	return kvdecoder(string(profile))
 }

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"io/ioutil"
 	"testing"
+
+	"github.com/nindalf/crypto/aes"
 )
 
 const datafile07 = "07-data.txt"
@@ -19,8 +21,10 @@ func TestDecryptAESECB(t *testing.T) {
 	b := make([]byte, (len(encoded)/4)*3)
 	DecodeBase64(b, encoded)
 	key := []byte("YELLOW SUBMARINE")
+	block := aes.NewCipher(key)
+	decrypter := newECBDecrypter(block)
 
-	DecryptAESECB(b, key)
+	decrypter.CryptBlocks(b, b)
 	if !bytes.Equal(b, plaintext07) {
 		t.Fatalf("Plaintext was not - %s ...(truncated)", string(plaintext07[0:64]))
 	}
@@ -30,13 +34,16 @@ func TestECBEncryptDecrypt(t *testing.T) {
 	text := []byte("ATTACK AT DAWN!!")
 	expected := "ATTACK AT DAWN!!"
 	key := []byte("YELLOW SUBMARINE")
+	block := aes.NewCipher(key)
 
-	EncryptAESECB(text, key)
+	encrypter := newECBEncrypter(block)
+	encrypter.CryptBlocks(text, text)
 	if string(text) == expected {
 		t.Fatalf("Failed to encrypt - %s", expected)
 	}
 
-	DecryptAESECB(text, key)
+	decrypter := newECBDecrypter(block)
+	decrypter.CryptBlocks(text, text)
 	if string(text) != expected {
 		t.Fatalf("Failed to decrypt - %s", expected)
 	}

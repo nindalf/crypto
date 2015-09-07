@@ -6,9 +6,6 @@ import (
 	"github.com/nindalf/crypto/aes"
 )
 
-// Used when a random key needs to be used repeatedly
-var rkey = randbytes(16)
-
 //  a function that produces: AES-128-ECB(b || unknown-string, random-key)
 func oracleeasy(b []byte) []byte {
 	plaintext := []byte("Um9sbGluJyBpbiBteSA1LjAKV2l0aCBteSByYWctdG9wIGRvd24gc28gbXkgaGFpciBjYW4gYmxvdwpUaGUgZ2lybGllcyBvbiBzdGFuZGJ5IHdhdmluZyBqdXN0IHRvIHNheSBoaQpEaWQgeW91IHN0b3A/IE5vLCBJIGp1c3QgZHJvdmUgYnkK")
@@ -16,7 +13,7 @@ func oracleeasy(b []byte) []byte {
 	DecodeBase64(dec, plaintext)
 	b = append(b, dec...)
 	b = PadPKCS7(b, aes.BlockSize)
-	EncryptAESECB(b, rkey)
+	ecbEnc.CryptBlocks(b, b)
 	return b
 }
 

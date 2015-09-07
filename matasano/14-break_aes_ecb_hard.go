@@ -20,7 +20,7 @@ func oraclehard(b []byte) []byte {
 	r = append(r, b...)
 	r = append(r, dec...)
 	r = PadPKCS7(r, 16)
-	EncryptAESECB(r, rkey)
+	ecbEnc.CryptBlocks(r, r)
 	return r
 }
 
