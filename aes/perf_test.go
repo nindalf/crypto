@@ -44,3 +44,11 @@ func testFunc(b *testing.B, f func([]byte, []byte), buf1, buf2 []byte) {
 		f(buf1, buf2)
 	}
 }
+
+// Takes              702 ns/op
+func BenchmarkKeyExpansion(b *testing.B) {
+	rand.Read(key)
+	for n := 0; n < b.N; n++ {
+		keyExpansion(key)
+	}
+}
