@@ -1,34 +1,88 @@
 package matasano
 
-import "github.com/nindalf/crypto/aes"
+import (
+	"crypto/cipher"
 
-// DecryptAESCBC decrypts a ciphertext encrypted with AES in CBC mode.
+	"github.com/nindalf/crypto/aes"
+)
+
+var cbcDec = NewCBCDecrypter(aesBlockCipher, []byte{})
+var cbcEnc = NewCBCEncrypter(aesBlockCipher, []byte{})
+
+type cbc struct {
+	cipher.Block // the block cipher
+	iv           []byte
+}
+
+type ivSetter interface {
+	SetIV([]byte)
+}
+
+// cbcDecrypter decrypts a ciphertext encrypted with AES in CBC mode.
 // This solves http://cryptopals.com/sets/2/challenges/10/
-func DecryptAESCBC(b, key, iv []byte) {
-	aesc := aes.NewCipher(key)
+type cbcDecrypter cbc
 
-	t := make([]byte, aes.BlockSize)
-	ivc := make([]byte, aes.BlockSize)
-	copy(ivc, iv)
-	for i := 0; i < len(b); i += aes.BlockSize {
-		copy(t, b[i:i+aes.BlockSize])
-		aesc.Decrypt(b[i:i+aes.BlockSize], b[i:i+aes.BlockSize])
-		for j := range b[i : i+aes.BlockSize] {
-			b[i+j] ^= ivc[j]
-		}
-		copy(ivc, t)
+// NewCBCDecrypter creates a new CBC decrypter using a given block cipher
+func NewCBCDecrypter(b cipher.Block, iv []byte) cipher.BlockMode {
+	ivcopy := make([]byte, aes.BlockSize)
+	copy(ivcopy, iv)
+	c := &cbc{b, ivcopy}
+	return (*cbcDecrypter)(c)
+}
+
+func (c *cbcDecrypter) CryptBlocks(dst, src []byte) {
+	temp1, temp2 := make([]byte, aes.BlockSize), make([]byte, aes.BlockSize)
+	copy(temp1, c.iv)
+	for len(src) > 0 && len(dst) > 0 {
+		copy(temp2, src[:aes.BlockSize])
+
+		c.Decrypt(dst[:aes.BlockSize], src[:aes.BlockSize])
+		xorBytes(dst[:aes.BlockSize], temp1)
+
+		src = src[aes.BlockSize:]
+		dst = dst[aes.BlockSize:]
+
+		copy(temp1, temp2)
 	}
 }
 
-// EncryptAESCBC encrypts a plaintext with AES in CBC mode.
-func EncryptAESCBC(b, key, iv []byte) {
-	aesc := aes.NewCipher(key)
+func (c *cbcDecrypter) SetIV(iv []byte) {
+	copy(c.iv, iv)
+}
 
-	for i := 0; i < len(b); i += aes.BlockSize {
-		for j := range b[i : i+aes.BlockSize] {
-			b[i+j] ^= iv[j]
-		}
-		aesc.Encrypt(b[i:i+aes.BlockSize], b[i:i+aes.BlockSize])
-		iv = b[i : i+aes.BlockSize]
+// cbcDecrypter decrypts a ciphertext encrypted with AES in CBC mode.
+// This solves http://cryptopals.com/sets/2/challenges/10/
+type cbcEncrypter cbc
+
+// NewCBCEncrypter creates a new CBC Encrypter using a given block cipher
+func NewCBCEncrypter(b cipher.Block, iv []byte) cipher.BlockMode {
+	ivcopy := make([]byte, aes.BlockSize)
+	copy(ivcopy, iv)
+	c := &cbc{b, ivcopy}
+	return (*cbcEncrypter)(c)
+}
+
+func (c *cbcEncrypter) CryptBlocks(dst, src []byte) {
+	temp := make([]byte, aes.BlockSize)
+	copy(temp, c.iv)
+
+	for len(src) > 0 && len(dst) > 0 {
+		xorBytes(temp, src)
+		c.Encrypt(dst[:aes.BlockSize], temp)
+
+		copy(temp, dst[:aes.BlockSize])
+
+		src = src[aes.BlockSize:]
+		dst = dst[aes.BlockSize:]
+	}
+}
+
+func (c *cbcEncrypter) SetIV(iv []byte) {
+	copy(c.iv, iv)
+}
+
+func xorBytes(dst, src []byte) {
+	for i := range dst {
+		dst[i] ^= src[i]
 	}
 }

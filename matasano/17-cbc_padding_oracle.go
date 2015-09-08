@@ -1,9 +1,6 @@
 package matasano
 
-import (
-	"bytes"
-	"fmt"
-)
+import "bytes"
 
 var plaintexts17 = []string{
 	"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
@@ -35,6 +32,7 @@ func CBCPaddingOracle(b, iv []byte) []byte {
 // decrypts the first 16 bytes of block b using calls to the padding oracle
 func breakCBCBlock(b, iv []byte, lastblock bool) []byte {
 	p := make([]byte, 16)
+	c := make([]byte, 16)
 	ivc := make([]byte, 16)
 	for i := 15; i >= 0; i-- {
 		copy(ivc, iv)
@@ -46,16 +44,13 @@ func breakCBCBlock(b, iv []byte, lastblock bool) []byte {
 
 		temp := iv[i]
 		for k := 0; k < 256; k++ {
-			if lastblock && i == 15 && k == 1 {
+			if lastblock && i == 15 && byte(k) == paddingbyte {
 				continue
 			}
 			ivc[i] = temp ^ byte(k) ^ paddingbyte
-			if isPaddingValid(b, ivc) {
+			if isPaddingValid(c, b, ivc) {
 				p[i] = byte(k)
 				break
-			}
-			if k == 255 {
-				fmt.Println("failure")
 			}
 		}
 	}
@@ -66,15 +61,15 @@ func encrypt17(s string) ([]byte, []byte) {
 	b := []byte(s)
 	b = PadPKCS7(b, 16)
 	iv := randbytes(16)
-	EncryptAESCBC(b, rkey, iv)
+	cbcEnc.(ivSetter).SetIV(iv)
+	cbcEnc.CryptBlocks(b, b)
 	return b, iv
 }
 
 // isPaddingValid decrypts the ciphertext and returns true if the padding is valid
-func isPaddingValid(b, iv []byte) bool {
-	c := make([]byte, 16)
-	copy(c, b)
-	DecryptAESCBC(c, rkey, iv)
-	_, err := StripPKCS7(c)
+func isPaddingValid(dst, src, iv []byte) bool {
+	cbcDec.(ivSetter).SetIV(iv)
+	cbcDec.CryptBlocks(dst, src)
+	_, err := StripPKCS7(dst)
 	return err == nil
 }

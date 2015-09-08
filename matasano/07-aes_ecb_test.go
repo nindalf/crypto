@@ -33,16 +33,14 @@ func TestDecryptAESECB(t *testing.T) {
 func TestECBEncryptDecrypt(t *testing.T) {
 	text := []byte("ATTACK AT DAWN!!")
 	expected := "ATTACK AT DAWN!!"
-	key := []byte("YELLOW SUBMARINE")
-	block := aes.NewCipher(key)
 
-	encrypter := newECBEncrypter(block)
+	encrypter := newECBEncrypter(aesBlockCipher)
 	encrypter.CryptBlocks(text, text)
 	if string(text) == expected {
 		t.Fatalf("Failed to encrypt - %s", expected)
 	}
 
-	decrypter := newECBDecrypter(block)
+	decrypter := newECBDecrypter(aesBlockCipher)
 	decrypter.CryptBlocks(text, text)
 	if string(text) != expected {
 		t.Fatalf("Failed to decrypt - %s", expected)

@@ -24,13 +24,15 @@ func encrypt16(input string) ([]byte, []byte) {
 	b := []byte("comment1=cooking%20MCs;userdata=" + input + ";comment2=%20like%20a%20pound%20of%20bacon")
 	b = PadPKCS7(b, aes.BlockSize)
 	iv := randbytes(aes.BlockSize)
-	EncryptAESCBC(b, rkey, iv)
+	cbcEnc.(ivSetter).SetIV(iv)
+	cbcEnc.CryptBlocks(b, b)
 	return b, iv
 }
 
 // returns true if b contains ";admin=true;"
 func decrypt16(b []byte, iv []byte) bool {
-	DecryptAESCBC(b, rkey, iv)
+	cbcDec.(ivSetter).SetIV(iv)
+	cbcDec.CryptBlocks(b, b)
 	s := string(b)
 	return strings.Contains(s, "admin=true")
 }

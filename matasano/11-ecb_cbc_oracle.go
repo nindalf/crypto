@@ -48,13 +48,13 @@ func generateCiphertexts(b []byte) ([][]byte, []int) {
 
 	for i := range ciphers {
 		p := getPlaintext(b)
-		key := randbytes(16)
 		coin := rand.Intn(2)
 		if coin == 1 {
 			ecbEnc.CryptBlocks(p, p)
 		} else {
 			crand.Read(iv)
-			EncryptAESCBC(p, key, iv)
+			cbcEnc.(ivSetter).SetIV(iv)
+			cbcEnc.CryptBlocks(p, p)
 		}
 		ciphers[i] = p
 		coinflips[i] = coin

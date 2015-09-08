@@ -29,9 +29,9 @@ func newECBDecrypter(b cipher.Block) cipher.BlockMode {
 
 func (e *ecbDecrypter) CryptBlocks(dst, src []byte) {
 	for len(src) > 0 && len(dst) > 0 {
-		e.Decrypt(dst[0:aes.BlockSize], src[0:aes.BlockSize])
-		src = src[aes.BlockSize:len(src)]
-		dst = dst[aes.BlockSize:len(dst)]
+		e.Decrypt(dst[:aes.BlockSize], src[:aes.BlockSize])
+		src = src[aes.BlockSize:]
+		dst = dst[aes.BlockSize:]
 	}
 }
 
@@ -45,9 +45,9 @@ func newECBEncrypter(b cipher.Block) cipher.BlockMode {
 
 func (e *ecbEncrypter) CryptBlocks(dst, src []byte) {
 	for len(src) > 0 && len(dst) > 0 {
-		e.Encrypt(dst[0:aes.BlockSize], src[0:aes.BlockSize])
-		src = src[aes.BlockSize:len(src)]
-		dst = dst[aes.BlockSize:len(dst)]
+		e.Encrypt(dst[:aes.BlockSize], src[:aes.BlockSize])
+		src = src[aes.BlockSize:]
+		dst = dst[aes.BlockSize:]
 	}
 }
 
@@ -69,8 +69,8 @@ func EncryptAESECBParallel(b, key []byte) {
 
 func encryptECBblocks(b []byte, aesc cipher.Block, wg *sync.WaitGroup) {
 	for len(b) > 0 {
-		aesc.Decrypt(b[0:aes.BlockSize], b[0:aes.BlockSize])
-		b = b[aes.BlockSize:len(b)]
+		aesc.Decrypt(b[:aes.BlockSize], b[:aes.BlockSize])
+		b = b[aes.BlockSize:]
 	}
 	wg.Done()
 }

@@ -2,7 +2,6 @@ package matasano
 
 import (
 	"bytes"
-	"crypto/cipher"
 	"crypto/rand"
 	"io/ioutil"
 	"testing"
@@ -23,18 +22,20 @@ func TestDecryptAESCBC(t *testing.T) {
 	DecodeBase64(b, encoded)
 
 	key := []byte("YELLOW SUBMARINE")
+	block := aes.NewCipher(key)
 	iv := make([]byte, aes.BlockSize)
+	cbcd := NewCBCDecrypter(block, iv)
 
-	DecryptAESCBC(b, key, iv)
+	cbcd.CryptBlocks(b, b)
+
 	if !bytes.Equal(b, plaintext10) {
 		t.Fatalf("Plaintext was not - %s ...(truncated)", string(plaintext10[0:32]))
 	}
 }
 
-func TestCBCEncryptDecryptNew(t *testing.T) {
+func TestCBCEncryptDecrypt(t *testing.T) {
 	text := []byte("ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!")
 	expected := "ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!"
-	key := []byte("YELLOW SUBMARINE")
 
 	iv := make([]byte, aes.BlockSize)
 	_, err := rand.Read(iv)
@@ -42,38 +43,14 @@ func TestCBCEncryptDecryptNew(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	block := aes.NewCipher(key)
-
-	cbce := cipher.NewCBCEncrypter(block, iv)
+	cbce := NewCBCEncrypter(aesBlockCipher, iv)
 	cbce.CryptBlocks(text, text)
 	if string(text) == expected {
 		t.Fatalf("Failed to encrypt - %s", expected)
 	}
 
-	cbcd := cipher.NewCBCDecrypter(block, iv)
+	cbcd := NewCBCDecrypter(aesBlockCipher, iv)
 	cbcd.CryptBlocks(text, text)
-	if string(text) != expected {
-		t.Fatalf("Failed to decrypt - %s", expected)
-	}
-}
-
-func TestCBCEncryptDecryptOld(t *testing.T) {
-	text := []byte("ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!")
-	expected := "ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!ATTACK AT DAWN!!"
-	key := []byte("YELLOW SUBMARINE")
-
-	iv := make([]byte, aes.BlockSize)
-	_, err := rand.Read(iv)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	EncryptAESCBC(text, key, iv)
-	if string(text) == expected {
-		t.Fatalf("Failed to encrypt - %s", expected)
-	}
-
-	DecryptAESCBC(text, key, iv)
 	if string(text) != expected {
 		t.Fatalf("Failed to decrypt - %s", expected)
 	}
