@@ -10,9 +10,13 @@ var errPaddingMalformed = errors.New("PKCS7 malformed")
 func PadPKCS7(input []byte, n int) []byte {
 	np := n - (len(input) % n)
 	padding := byte(np) - byte(0)
-	for i := 0; i < np; i++ {
-		input = append(input, padding)
+
+	pbytes := make([]byte, np)
+	for i := range pbytes {
+		pbytes[i] = padding
 	}
+
+	input = append(input, pbytes...)
 	return input
 }
 
@@ -23,10 +27,12 @@ func StripPKCS7(input []byte) ([]byte, error) {
 	if n < 1 {
 		return input, errPaddingMalformed
 	}
+
 	for i := l; i > l-n; i-- {
 		if input[i] != input[l] {
 			return input, errPaddingMalformed
 		}
 	}
+
 	return input[0 : l-n+1], nil
 }
