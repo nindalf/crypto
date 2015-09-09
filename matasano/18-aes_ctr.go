@@ -6,21 +6,19 @@ import (
 	"github.com/nindalf/crypto/aes"
 )
 
-var ctrEncDec = newCTR(aesBlockCipher, make([]byte, aes.BlockSize))
+var ctrAES = newCTR(aesBlockCipher, make([]byte, aes.BlockSize))
 
 // ctr implements the Stream interface from crypto/cipher
 // http://golang.org/pkg/crypto/cipher/#Stream
 type ctr struct {
-	block   cipher.Block
-	counter byteint
-	temp    []byte
+	cipher.Block
+	nonce []byte
 }
 
 func newCTR(block cipher.Block, iv []byte) cipher.Stream {
-	counter := make(byteint, aes.BlockSize)
-	copy(counter, iv)
-	temp := make([]byte, aes.BlockSize)
-	return ctr{block, counter, temp}
+	nonce := make(byteint, aes.BlockSize)
+	copy(nonce, iv)
+	return ctr{block, nonce}
 }
 
 // XORKeyStream XORs each byte in the given slice with a byte from the
@@ -33,15 +31,19 @@ func (c ctr) XORKeyStream(dst, src []byte) {
 		panic("dst smaller than src")
 	}
 
-	for len(src) > 0 {
-		copy(c.temp, c.counter)
-		c.counter.AddOne()
+	temp := make([]byte, aes.BlockSize)
+	counter := make(byteint, aes.BlockSize)
+	copy(counter, c.nonce)
 
-		c.block.Encrypt(c.temp, c.temp)
+	for len(src) > 0 {
+		copy(temp, counter)
+		counter.AddOne()
+
+		c.Encrypt(temp, temp)
 
 		l := min(len(src), aes.BlockSize)
-		xorBytes(c.temp[:l], src[:l])
-		copy(dst[:l], c.temp)
+		xorBytes(temp[:l], src[:l])
+		copy(dst[:l], temp)
 
 		dst = dst[l:]
 		src = src[l:]
@@ -49,7 +51,7 @@ func (c ctr) XORKeyStream(dst, src []byte) {
 }
 
 func (c ctr) SetIV(iv []byte) {
-	copy(c.counter, iv)
+	copy(c.nonce, iv)
 }
 
 func min(a, b int) int {

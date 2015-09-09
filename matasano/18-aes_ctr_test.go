@@ -19,17 +19,17 @@ func TestCTREncryptDecrypt(t *testing.T) {
 
 func testCTR(t *testing.T, input string) {
 	b := []byte(input)
+
 	iv := make([]byte, aes.BlockSize)
 	rand.Read(iv)
+	ctrAES.(ivSetter).SetIV(iv)
 
-	ctrEncDec.(ivSetter).SetIV(iv)
-	ctrEncDec.XORKeyStream(b, b)
+	ctrAES.XORKeyStream(b, b)
 	if string(b) == input {
 		t.Fatalf("Failed to encrypt - %s", input)
 	}
 
-	ctrEncDec.(ivSetter).SetIV(iv)
-	ctrEncDec.XORKeyStream(b, b)
+	ctrAES.XORKeyStream(b, b)
 	if string(b) != input {
 		t.Fatalf("Failed to decrypt - %s, %s", input, string(b))
 	}
@@ -44,8 +44,8 @@ func TestCTRDecryptCoursera(t *testing.T) {
 	iv := []byte{0x77, 0xb, 0x80, 0x25, 0x9e, 0xc3, 0x3b, 0xeb, 0x25, 0x61, 0x35, 0x8a, 0x9f, 0x2d, 0xc6, 0x17}
 
 	block := aes.NewCipher(key)
-	ctrDec := newCTR(block, iv)
-	ctrDec.XORKeyStream(b, b)
+	ctr := newCTR(block, iv)
+	ctr.XORKeyStream(b, b)
 
 	if string(b) != expected {
 		t.Fatalf("Failed to decrypt in CTR mode. Expected - %s\tFound - %s", expected, string(b))
@@ -63,8 +63,8 @@ func TestCTRDecryptMatasano(t *testing.T) {
 	iv := make([]byte, 16)
 
 	block := aes.NewCipher(key)
-	ctrDec := newCTR(block, iv)
-	ctrDec.XORKeyStream(c, c)
+	ctr := newCTR(block, iv)
+	ctr.XORKeyStream(c, c)
 
 	if !bytes.Equal(c, expected) {
 		t.Fatalf("Failed to decrypt in CTR mode. Expected - %s\tFound - %s", expected, string(c))
