@@ -19,6 +19,8 @@ type ivSetter interface {
 }
 
 // cbcDecrypter decrypts a ciphertext encrypted with AES in CBC mode.
+// implements the BlockMode interface from crypto/cipher
+// http://golang.org/pkg/crypto/cipher/#BlockMode
 // This solves http://cryptopals.com/sets/2/challenges/10/
 type cbcDecrypter cbc
 
@@ -50,8 +52,9 @@ func (c *cbcDecrypter) SetIV(iv []byte) {
 	copy(c.iv, iv)
 }
 
-// cbcDecrypter decrypts a ciphertext encrypted with AES in CBC mode.
-// This solves http://cryptopals.com/sets/2/challenges/10/
+// cbcEncrypter decrypts a ciphertext encrypted with AES in CBC mode.
+// implements the BlockMode interface from crypto/cipher
+// http://golang.org/pkg/crypto/cipher/#BlockMode
 type cbcEncrypter cbc
 
 // NewCBCEncrypter creates a new CBC Encrypter using a given block cipher

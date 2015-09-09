@@ -6,17 +6,19 @@ import (
 	"github.com/nindalf/crypto/aes"
 )
 
-var ctrAES = newCTR(aesBlockCipher, make([]byte, aes.BlockSize))
+var ctrAES = NewCTR(aesBlockCipher, make([]byte, aes.BlockSize))
 
 // ctr implements the Stream interface from crypto/cipher
 // http://golang.org/pkg/crypto/cipher/#Stream
+// This solves http://cryptopals.com/sets/3/challenges/17
 type ctr struct {
 	cipher.Block
 	nonce []byte
 }
 
-func newCTR(block cipher.Block, iv []byte) cipher.Stream {
-	nonce := make(byteint, aes.BlockSize)
+// NewCTR creates a new CTR
+func NewCTR(block cipher.Block, iv []byte) cipher.Stream {
+	nonce := make([]byte, aes.BlockSize)
 	copy(nonce, iv)
 	return ctr{block, nonce}
 }

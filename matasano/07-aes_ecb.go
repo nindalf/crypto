@@ -19,6 +19,8 @@ type ecb struct {
 }
 
 // ecbDecrypter decrypts a ciphertext encrypted with AES in ECB mode.
+// implements the BlockMode interface from crypto/cipher
+// http://golang.org/pkg/crypto/cipher/#BlockMode
 // This solves http://cryptopals.com/sets/1/challenges/7/
 type ecbDecrypter ecb
 
@@ -36,6 +38,8 @@ func (e *ecbDecrypter) CryptBlocks(dst, src []byte) {
 }
 
 // ecbEncrypter encrypts a plaintext with AES in ECB mode.
+// implements the BlockMode interface from crypto/cipher
+// http://golang.org/pkg/crypto/cipher/#BlockMode
 type ecbEncrypter ecb
 
 func newECBEncrypter(b cipher.Block) cipher.BlockMode {

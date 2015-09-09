@@ -1,6 +1,9 @@
 package matasano
 
-import "bytes"
+import (
+	"bytes"
+	"crypto/aes"
+)
 
 var plaintexts17 = []string{
 	"MDAwMDAwTm93IHRoYXQgdGhlIHBhcnR5IGlzIGp1bXBpbmc=",
@@ -14,16 +17,18 @@ var plaintexts17 = []string{
 	"MDAwMDA4b2xsaW4nIGluIG15IGZpdmUgcG9pbnQgb2g=",
 	"MDAwMDA5aXRoIG15IHJhZy10b3AgZG93biBzbyBteSBoYWlyIGNhbiBibG93"}
 
-// CBCPaddingOracle just chills out
+// CBCPaddingOracle breaks a ciphertext encrypted using CBC-mode block cipher
+// It does so by changing ciphertext bytes and checking if the corresponding padding is valid
+// This solves http://cryptopals.com/sets/3/challenges/17
 func CBCPaddingOracle(b, iv []byte) []byte {
 	var decrypted bytes.Buffer
-	t := make([]byte, 16)
+	t := make([]byte, aes.BlockSize)
 
 	for len(b) > 0 {
-		copy(t, b[0:16])
-		dec := breakCBCBlock(b[0:16], iv, len(b) == 16)
+		copy(t, b[:aes.BlockSize])
+		dec := breakCBCBlock(b[:aes.BlockSize], iv, len(b) == 16)
 		copy(iv, t)
-		b = b[16:len(b)]
+		b = b[aes.BlockSize:]
 		decrypted.Write(dec)
 	}
 	return decrypted.Bytes()
@@ -31,9 +36,9 @@ func CBCPaddingOracle(b, iv []byte) []byte {
 
 // decrypts the first 16 bytes of block b using calls to the padding oracle
 func breakCBCBlock(b, iv []byte, lastblock bool) []byte {
-	p := make([]byte, 16)
-	c := make([]byte, 16)
-	ivc := make([]byte, 16)
+	p := make([]byte, aes.BlockSize)
+	c := make([]byte, aes.BlockSize)
+	ivc := make([]byte, aes.BlockSize)
 	for i := 15; i >= 0; i-- {
 		copy(ivc, iv)
 		paddingbyte := byte(16 - i)
@@ -60,7 +65,7 @@ func breakCBCBlock(b, iv []byte, lastblock bool) []byte {
 func encrypt17(s string) ([]byte, []byte) {
 	b := []byte(s)
 	b = PadPKCS7(b, 16)
-	iv := randbytes(16)
+	iv := randbytes(aes.BlockSize)
 	cbcEnc.(ivSetter).SetIV(iv)
 	cbcEnc.CryptBlocks(b, b)
 	return b, iv
