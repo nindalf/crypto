@@ -5,7 +5,7 @@ In the old days crypto didn't have proofs and it sucked. Modern cryptography has
 
 Further reading - https://en.wikibooks.org/wiki/High_School_Mathematics_Extensions/Discrete_Probability
 
-Mathematical symbols copied from [wiki page](https://en.wikipedia.org/wiki/Mathematical_operators_and_symbols_in_Unicode). Some symbols used are ∑ ∏ ∈ (belongs to) ∉ ⊆ ∪ ∀ ⨁ ∄ ∃ ϵ (epsilon) ≈ ⟘
+Mathematical symbols copied from [wiki page](https://en.wikipedia.org/wiki/Mathematical_operators_and_symbols_in_Unicode). Some symbols used are ∑ ∏ ∀ ∈ (belongs to) ∉ ⊆ ∪ ⨁ ∄ ∃ ϵ (epsilon) ≈ ⟘ 𝜑
 
 #### Basics
 

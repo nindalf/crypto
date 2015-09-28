@@ -135,3 +135,5 @@ Thus the definition - E is secure if ∀ "efficient" adversaries A Adv<sub>SS</s
 Example. Suppose the adversary can always tell the LSB of m<sub>b</sub>. It sends m<sub>0</sub> and m<sub>1</sub> such that lsb(m<sub>0</sub>) = 0 and lsb(m<sub>1</sub>) = 1. Thus the advantage would be |Pr[Exp(0) = 1] - Pr[Exp(1) = 1]| = |0 - 1| = 1. (Probability that the challenger guessed 1 for m<sub>0</sub> - Probability that the challenger guessed 1 for m<sub>1</sub>).  
 
 This holds for any information about the plaintext, not just the lsb. It could be msb, bit 7, the xor of all bits etc
+
+// What I'm not clear about - the difference between the Adv fn for PRGs and ciphers.

@@ -141,7 +141,7 @@ Solution - use a cryptographic MAC, not an ad-hoc solution like Cyclic Redundanc
 
 #### Padding Oracle attack
 
-This is an example of a chosen ciphertext attack. If the attacker can differentiate between the two errors (invalid_mac, invalid_pad), the attacker submits a ciphertext and learns if the last bytes of the plaintext are a valid pad. He modifies the ciphertext and guesses the plaintext byte by byte.
+This is an example of a chosen ciphertext attack. If the attacker can differentiate between the two errors (invalidmac, invalidpad), the attacker submits a ciphertext and learns if the last bytes of the plaintext are a valid pad. He modifies the ciphertext and guesses the plaintext byte by byte.
 
 Even if the server sends the same response (⟘) in both cases, a timing attack is still possible. Since the padding is checked before the mac and verfication takes some time, the attacker can differentiate betweent the two errors. In OpenSSL 0.9.7a, the response for a bad padding was received in 21ms on average and response for a bad mac was received in 23ms
 
@@ -151,7 +151,7 @@ Even if the server sends the same response (⟘) in both cases, a timing attack 
 2. Guess a value g for the last byte of block i. Change the last byte of ciphertext block c[i-1] to (last-byte ⨁ g ⨁ 01) where 01 is the valid padding for a 15-byte long message
 3. If the guess is correct, the last byte of plaintext m[i] becomes g ⨁ g ⨁ 01 = 01 and the server tells us that the pad is valid. The max number of guesses is 256 and on average it should take 128 guesses
 
-Padding oracle is difficult to pull off on TLS because when the server receives a message with invalid_mac or invalid_pad, it tears down the connection and renogiates the key.
+Padding oracle is difficult to pull off on TLS because when the server receives a message with invalidmac or invalidpad, it tears down the connection and renogiates the key.
 
 It is however, possible to pull off this attack on IMAP servers.
 

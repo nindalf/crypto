@@ -374,6 +374,7 @@ dummy padding block      | yes                   | no    | the block of 16 bytes
 ---
 
 Note on integrity: None of the methods discussed here ensure message integrity.
+
 * Stream ciphers
 * Deterministic counter mode
 * Random CBC
